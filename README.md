@@ -1,4 +1,4 @@
-# 🍽 Sistem Manajemen Restoran — Qt C++
+# 🍽 Sistem Manajemen Restoran
 
 Proyek UAS Terintegrasi untuk 4 Mata Kuliah:
 Teori Alpro, Praktikum Alpro, Teori Strukdat, Praktikum Strukdat
