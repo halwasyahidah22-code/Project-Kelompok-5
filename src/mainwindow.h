@@ -1,0 +1,173 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QWidget>
+#include <QTabWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QLineEdit>
+#include <QTableWidget>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QTextEdit>
+#include <QGroupBox>
+#include <QMessageBox>
+#include <QHeaderView>
+#include <QListWidget>
+#include <QSplitter>
+#include <QScrollArea>
+#include <QFrame>
+#include <QStatusBar>
+#include <QMenuBar>
+#include <QAction>
+#include <QTimer>
+#include <QDateTime>
+#include <QFileDialog>
+#include <QCheckBox>
+#include <QFont>
+
+#include "datastructures.h"
+
+using namespace RestaurantSystem;
+
+class MainWindow : public QMainWindow {
+    Q_OBJECT
+
+public:
+    explicit MainWindow(QWidget* parent = nullptr);
+    ~MainWindow();
+
+private:
+    // ---- Data Structures ----
+    MenuLinkedList*    menuList;
+    TableCircularList* tableList;
+    StaffCircularList* staffList;
+    OrderQueue*        orderQueue;
+    AVLTree*           menuAVL;
+    MenuHashTable*     menuHash;
+    TableGraph*        tableGraph;
+    ActionStack*       actionStack;
+
+    int nextMenuId;
+    int nextStaffId;
+
+    // ---- UI Components ----
+    QTabWidget* tabWidget;
+
+    // Tab: Dashboard
+    QWidget*    dashboardTab;
+    QLabel*     lblTotalMenu;
+    QLabel*     lblTotalOrders;
+    QLabel*     lblPendingOrders;
+    QLabel*     lblActiveTables;
+    QLabel*     lblCurrentTime;
+    QTextEdit*  logDisplay;
+
+    // Tab: Menu Management
+    QWidget*     menuTab;
+    QTableWidget* menuTable;
+    QLineEdit*   inputMenuName;
+    QComboBox*   inputMenuCategory;
+    QDoubleSpinBox* inputMenuPrice;
+    QCheckBox*   inputMenuAvailable;
+    QLineEdit*   searchMenuInput;
+    QComboBox*   sortMenuCombo;
+
+    // Tab: Order Management
+    QWidget*     orderTab;
+    QTableWidget* orderTable;
+    QComboBox*   orderTableSelect;
+    QListWidget* orderItemList;
+    QComboBox*   orderMenuSelect;
+    QSpinBox*    orderQtyInput;
+    QComboBox*   orderPrioritySelect;
+    QLabel*      lblOrderTotal;
+    QTableWidget* pendingOrdersTable;
+
+    // Tab: Table Management
+    QWidget*     tableTab;
+    QTableWidget* tableDisplay;
+    QLabel*      lblCurrentTable;
+    QTextEdit*   graphDisplay;
+
+    // Tab: Staff & Shift
+    QWidget*     staffTab;
+    QTableWidget* staffTable;
+    QLineEdit*   inputStaffName;
+    QComboBox*   inputStaffRole;
+    QLabel*      lblOnDuty;
+
+    // Tab: History & Reports
+    QWidget*     historyTab;
+    QListWidget* historyList;
+    QTableWidget* reportTable;
+    QComboBox*   reportSortCombo;
+
+    // ---- Helper Methods ----
+    void setupUI();
+    void setupDashboard();
+    void setupMenuTab();
+    void setupOrderTab();
+    void setupTableTab();
+    void setupStaffTab();
+    void setupHistoryTab();
+    void setupInitialData();
+    void applyStyleSheet();
+
+    void refreshMenuTable();
+    void refreshOrderTable();
+    void refreshTableDisplay();
+    void refreshStaffTable();
+    void refreshHistoryList();
+    void refreshDashboard();
+    void refreshPendingOrders();
+    void updateGraphDisplay();
+
+    void addLog(const QString& msg);
+    QString formatPrice(double price);
+    std::string getCurrentTimestamp();
+
+    // Current order being built
+    Order* currentOrder;
+    std::vector<OrderItem> currentOrderItems;
+    double currentOrderTotal;
+
+private slots:
+    void onAddMenuItem();
+    void onRemoveMenuItem();
+    void onSearchMenu();
+    void onSortMenu();
+    void onSaveMenu();
+    void onLoadMenu();
+
+    void onCreateOrder();
+    void onAddItemToOrder();
+    void onRemoveItemFromOrder();
+    void onSubmitOrder();
+    void onProcessNextOrder();
+    void onUpdateOrderStatus();
+
+    void onNextTable();
+    void onOccupyTable();
+    void onFreeTable();
+    void onRunBFS();
+    void onRunDFS();
+
+    void onAddStaff();
+    void onRemoveStaff();
+    void onRotateShift();
+
+    void onUndoAction();
+    void onGenerateReport();
+    void onSortReport();
+    void onSaveReport();
+
+    void updateClock();
+};
+
+#endif // MAINWINDOW_H
