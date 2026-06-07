@@ -1,38 +1,17 @@
-# 🍽 Sistem Manajemen Restoran
-
-Proyek UAS Terintegrasi untuk 4 Mata Kuliah:
-Teori Alpro, Praktikum Alpro, Teori Strukdat, Praktikum Strukdat
+# UAS KELOMPOK 5
+---
+## 🍽 Sistem Manajemen Restoran
+Sistem Manajemen untuk Restoran mengimplementasi dari materi materi Algoritma dan Pemrograman dan Struktur Data
 
 ---
 
-## 🔧 Cara Build & Jalankan
-
-### Menggunakan Qt Creator (Direkomendasikan)
-1. Buka Qt Creator
-2. File → Open Project → pilih `RestaurantSystem.pro`
-3. Klik Configure Project
-4. Tekan tombol ▶ Run
-
-### Menggunakan qmake (Terminal)
-```bash
-cd RestaurantSystem/
-mkdir build && cd build
-qmake ../RestaurantSystem.pro
-make
-./RestaurantSystem
-```
-
-### Menggunakan CMake
-```bash
-mkdir build && cd build
-cmake ..
-make
-./RestaurantSystem
-```
+## Cara Menjalankan Aplikasi
+1. Donwload dan Install SistemRestoran_Setup
+2. Aplikasi siap dijalankan
 
 ---
 
-## ✅ Checklist 11 Elemen C++ (Praktikum Alpro)
+## Implementasi Materi Algoritma dan Pemrograman
 
 | No | Elemen              | Implementasi                                       | File               |
 |----|---------------------|----------------------------------------------------|--------------------|
@@ -50,7 +29,7 @@ make
 
 ---
 
-## ✅ Checklist 8 Struktur Data (Praktikum Strukdat)
+## Implementasi Materi Struktur Data
 
 | No | Struktur Data         | Digunakan Untuk                          | Kelas                    |
 |----|-----------------------|------------------------------------------|--------------------------|
@@ -65,67 +44,13 @@ make
 
 ---
 
-## 🗂 Struktur File
-
-```
-RestaurantSystem/
-├── RestaurantSystem.pro   # Qt project file
-├── CMakeLists.txt         # CMake alternative
-├── README.md
-└── src/
-    ├── main.cpp           # Entry point
-    ├── mainwindow.h       # Deklarasi MainWindow + Qt slots
-    ├── mainwindow.cpp     # Implementasi UI + semua slot
-    └── datastructures.h   # Semua struktur data C++ (header-only)
-```
-
----
+K
 
 ## 📱 Fitur Aplikasi (Tab)
 
 ### 📊 Dashboard
-- Statistik real-time: total menu, total order, pending, meja terisi
-- Log aktivitas sistem
-- Jam digital berjalan
-
 ### 🍜 Menu Management
-- CRUD menu (Linked List + AVL Tree + Hash Table)
-- Pencarian cepat by ID (Hash Table O(1)) atau nama
-- Sorting: Bubble Sort (harga), STL sort (nama), AVL inorder (ID)
-- Simpan/muat dari file `.txt`
-
 ### 📋 Order Management
-- Buat order baru per meja
-- Tambah/hapus item dari order
-- Submit ke Priority Queue (VIP prioritas lebih tinggi)
-- Proses order berikutnya (FIFO dalam prioritas sama)
-- Tampilkan semua order (STL list + iterator)
-
 ### 🪑 Table Management
-- Navigasi meja (Circular Linked List — tidak ada ujung)
-- Tandai meja terisi / kosong
-- Jalankan BFS/DFS dari meja aktif (Graph)
-- Tampilkan adjacency list
-
 ### 👤 Staf & Shift
-- CRUD data staf (Circular Linked List)
-- Rotasi shift (maju ke staf berikutnya secara circular)
-
 ### 📁 Riwayat & Laporan
-- Stack history semua aksi (tampil LIFO)
-- Fitur Undo (pop dari stack)
-- Generate laporan order (Merge Sort)
-- Sort laporan: Merge Sort, STL sort + lambda
-- Simpan laporan ke `orders.txt`
-
----
-
-## 👨‍💻 Catatan Implementasi
-
-- Semua struktur data diimplementasikan **dari nol** tanpa library eksternal (kecuali STL)
-- AVL Tree auto-balance setelah setiap insert/delete
-- Priority Queue menggunakan `std::priority_queue` dengan custom comparator
-- Hash Table menggunakan `std::unordered_map` (O(1) average)
-- Graph menggunakan adjacency list (`unordered_map<int, vector<int>>`)
-- Circular Linked List benar-benar sirkular (tail->next = head)
-- Stack menggunakan `std::stack` (LIFO terjamin)
