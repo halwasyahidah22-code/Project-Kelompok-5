@@ -5,8 +5,8 @@ Sistem Manajemen untuk Restoran mengimplementasi dari materi materi Algoritma da
 
 ---
 
-## Cara Menjalankan Aplikasi
-1. Donwload dan Install SistemRestoran_Setup
+## 🛠️Cara Menjalankan Aplikasi
+1. Donwload dan Install `SistemRestoran_Setup`
 2. Aplikasi siap dijalankan
 
 ---
@@ -43,8 +43,6 @@ Sistem Manajemen untuk Restoran mengimplementasi dari materi materi Algoritma da
 | 8  | Sorting               | Bubble Sort (harga), Merge Sort (order), STL sort (nama) | `namespace Sorting` |
 
 ---
-
-K
 
 ## 📱 Fitur Aplikasi (Tab)
 
