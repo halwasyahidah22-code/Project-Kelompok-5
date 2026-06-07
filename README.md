@@ -1,7 +1,7 @@
 # UAS KELOMPOK 5
 ---
 ## 🍽 Sistem Manajemen Restoran
-Sistem Manajemen untuk Restoran mengimplementasi dari materi materi Algoritma dan Pemrograman dan Struktur Data
+Aplikasi Sistem Manajemen untuk Restoran berbasis C++ dan Qt6 yang mengimplementasi dari materi materi Algoritma dan Pemrograman dan Struktur Data, dibangun sebagai proyek UAS Terintegrasi.
 
 ---
 
@@ -12,43 +12,65 @@ Sistem Manajemen untuk Restoran mengimplementasi dari materi materi Algoritma da
 ---
 
 ## Implementasi Materi Algoritma dan Pemrograman
-
-| No | Elemen              | Implementasi                                       | File               |
-|----|---------------------|----------------------------------------------------|--------------------|
-| 1  | `struct`            | `MenuItem`, `Order`, `Table`, `Staff`, `Action`   | datastructures.h   |
-| 2  | References `&`      | Parameter fungsi `insert(const MenuItem&)`        | datastructures.h   |
-| 3  | Pointer `*`         | Node Linked List, AVL Tree (`MenuItem*`, `AVLNode*`) | datastructures.h |
-| 4  | `namespace`         | `namespace RestaurantSystem`, `namespace Sorting`, `namespace FileIO` | datastructures.h |
-| 5  | Callback Function   | `forEachMenu(menus, MenuCallback cb)`             | datastructures.h   |
-| 6  | Default Arg / Inline| Constructor default args, `inline` fungsi sort   | datastructures.h   |
-| 7  | Template            | `template<typename T> T* linearSearch(...)`       | datastructures.h   |
-| 8  | Exception Handling  | `try/catch/throw RestaurantException`             | mainwindow.cpp     |
-| 9  | STL (vector, list, iterator, sort, find, count) | `std::vector`, `std::list`, `std::find_if`, `std::sort`, `std::count_if` | datastructures.h |
-| 10 | File Handling       | `FileIO::saveMenuToFile`, `loadMenuFromFile`, `saveOrdersToFile` | datastructures.h |
-| 11 | Lambda Expression   | `sort` with lambda, `find_if` with lambda, `for_each` | datastructures.h / mainwindow.cpp |
+1. Struct
+2. Reference
+3. Pointer
+4. Namespace
+5. Callback Functiom
+6. Default Argument / Inline Function
+7. Function Overloading / Function Template
+8. Exception Handling
+9. STL Vector or List, Iterator, Sort, Find, Count
+10. File Handling
+11. Lambda Expression
 
 ---
 
 ## Implementasi Materi Struktur Data
-
-| No | Struktur Data         | Digunakan Untuk                          | Kelas                    |
-|----|-----------------------|------------------------------------------|--------------------------|
-| 1  | Linked List (Single)  | Master data menu restoran                | `MenuLinkedList`          |
-| 2  | Circular Linked List  | Rotasi meja aktif + rotasi shift staf   | `TableCircularList`, `StaffCircularList` |
-| 3  | Stack (LIFO)          | Riwayat aksi + fitur Undo               | `ActionStack`             |
-| 4  | Priority Queue        | Antrian order (VIP lebih diutamakan)    | `OrderQueue`              |
-| 5  | AVL Tree              | Pencarian menu berdasarkan ID           | `AVLTree`                 |
-| 6  | Graph + BFS + DFS     | Layout & relasi antar meja restoran     | `TableGraph`              |
-| 7  | Hash Table            | Lookup cepat O(1) item menu             | `MenuHashTable`           |
-| 8  | Sorting               | Bubble Sort (harga), Merge Sort (order), STL sort (nama) | `namespace Sorting` |
+1. Linked List
+2. Circular Linked list
+3. Stack
+4. Queue
+5. Binary Tree / AVL Tree
+6. Graph BFS DFS
+7. Hashing dan Hash Table
+8. Sorting
 
 ---
 
-## 📱 Fitur Aplikasi (Tab)
-
+## 📱 Fitur Aplikasi
 ### 📊 Dashboard
-### 🍜 Menu Management
-### 📋 Order Management
-### 🪑 Table Management
-### 👤 Staf & Shift
-### 📁 Riwayat & Laporan
+- Ringkasan statistik real-time: total menu, total pesanan, pesanan pending, meja aktif
+- Log aktivitas sistem
+- Jam digital yang diperbarui setiap detik
+
+### 🍜 Manajemen Menu
+- Tambah, hapus, dan cari item menu
+- Filter menu berdasarkan kategori (menggunakan callback)
+- Pengurutan multi-kriteria (nama, harga, kategori)
+- Simpan & muat data menu dari file
+- Pencarian cepat via AVL Tree dan Hash Table
+
+### 🧾 Manajemen Pesanan
+- Buat pesanan baru dengan memilih meja dan item menu
+- Sistem prioritas pesanan: **VIP** dan **Normal**
+- Proses pesanan berikutnya dari antrian (Priority Queue)
+- Update status pesanan: `pending → preparing → served → paid`
+- Perhitungan total harga otomatis
+
+### 🪑 Manajemen Meja
+- Navigasi meja dengan Circular Linked List
+- Tandai meja sebagai terisi atau kosong
+- Visualisasi grafik hubungan antar meja
+- Jalankan algoritma **BFS** dan **DFS** pada graf meja
+
+### 👥 Manajemen Staf & Shift
+- Tambah dan hapus data staf
+- Rotasi shift menggunakan Circular Linked List
+- Tampilkan staf yang sedang bertugas
+
+### 📜 Riwayat & Laporan
+- Riwayat semua aksi dengan fitur **Undo** (Stack)
+- Generate laporan pesanan dengan berbagai opsi pengurutan
+- Demo STL (`std::find`, `std::count`) untuk analisis data
+- Ekspor laporan ke file teks
