@@ -38,6 +38,8 @@ private:
     MenuHashTable*     menuHash;
     TableGraph*        tableGraph;
     ActionStack*       actionStack;
+    InventarisLinkedList* inventarisList;
+    TransaksiList*        transaksiList;
 
     int nextMenuId;
     int nextStaffId;
@@ -62,6 +64,10 @@ private:
     void refreshHistoryList();
     void refreshDashboard();
     void updateGraphDisplay();
+    void refreshInventarisTable();
+    void refreshTransaksiTable();
+    void refreshPembayaranStats();
+    void refreshLaporanKeuangan();
 
     // ---- Helpers ----
     void    addLog(const QString& msg);
@@ -116,6 +122,23 @@ private slots:
     void onSortReport();
     void onSaveReport();
     void onRunSTLDemo();
+
+    // Inventaris
+    void onTambahStok();
+    void onUpdateStok();
+    void onHapusStok();
+    void onCekStokMinim();
+    void onSimpanInventaris();
+
+    // Pembayaran
+    void onMuatOrder();
+    void onHitungKembalian();
+    void onProsesPembayaran();
+    void onCetakStruk();
+
+    // Laporan Keuangan
+    void onGenerateLapKeu();
+    void onSimpanLapKeu();
 
     // Timer
     void updateClock();

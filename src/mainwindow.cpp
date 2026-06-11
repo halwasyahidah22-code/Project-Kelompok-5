@@ -23,6 +23,8 @@ MainWindow::MainWindow(QWidget* parent)
     menuHash   = new MenuHashTable();
     tableGraph = new TableGraph();
     actionStack= new ActionStack();
+    inventarisList = new InventarisLinkedList();
+    transaksiList  = new TransaksiList();
 
     currentOrderItems.clear();
 
@@ -59,6 +61,8 @@ MainWindow::~MainWindow()
     delete menuHash;
     delete tableGraph;
     delete actionStack;
+    delete inventarisList;
+    delete transaksiList;
     if (currentOrder) delete currentOrder;
 }
 
@@ -111,6 +115,23 @@ void MainWindow::setupConnections()
     connect(ui->btnSaveReport,    &QPushButton::clicked, this, &MainWindow::onSaveReport);
     connect(ui->btnRunSTLDemo,    &QPushButton::clicked, this, &MainWindow::onRunSTLDemo);
 
+    // ── Inventaris ───────────────────────────────────────────
+    connect(ui->btnTambahStok,      &QPushButton::clicked, this, &MainWindow::onTambahStok);
+    connect(ui->btnUpdateStok,      &QPushButton::clicked, this, &MainWindow::onUpdateStok);
+    connect(ui->btnHapusStok,       &QPushButton::clicked, this, &MainWindow::onHapusStok);
+    connect(ui->btnCekStokMinim,    &QPushButton::clicked, this, &MainWindow::onCekStokMinim);
+    connect(ui->btnSimpanInventaris,&QPushButton::clicked, this, &MainWindow::onSimpanInventaris);
+
+    // ── Pembayaran ───────────────────────────────────────────
+    connect(ui->btnMuatOrder,         &QPushButton::clicked, this, &MainWindow::onMuatOrder);
+    connect(ui->btnHitungKembalian,   &QPushButton::clicked, this, &MainWindow::onHitungKembalian);
+    connect(ui->btnProsesPembayaran,  &QPushButton::clicked, this, &MainWindow::onProsesPembayaran);
+    connect(ui->btnCetakStruk,        &QPushButton::clicked, this, &MainWindow::onCetakStruk);
+
+    // ── Laporan Keuangan ─────────────────────────────────────
+    connect(ui->btnGenerateLapKeu, &QPushButton::clicked, this, &MainWindow::onGenerateLapKeu);
+    connect(ui->btnSimpanLapKeu,   &QPushButton::clicked, this, &MainWindow::onSimpanLapKeu);
+
     // ── Tabel Header ─────────────────────────────────────────
     ui->menuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->orderTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -118,6 +139,9 @@ void MainWindow::setupConnections()
     ui->tableDisplay->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->staffTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->reportTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->inventarisTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->transaksiTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->laporanKeuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 
 // ============================================================
@@ -202,6 +226,32 @@ void MainWindow::setupInitialData()
     addLog(QString("📦 %1 item menu dimuat.").arg(menuList->getSize()));
     addLog(QString("🪑 %1 meja dikonfigurasi.").arg(tableList->getSize()));
     addLog(QString("👤 %1 staf terdaftar.").arg(staffList->getSize()));
+
+    // ── Inventaris Seed Data ──
+    std::vector<std::tuple<std::string,std::string,int,std::string,int,double>> initInv = {
+        {"Beras",         "Bahan Pokok",     50, "kg",  10, 15000},
+        {"Minyak Goreng", "Bahan Pokok",     20, "liter", 5, 20000},
+        {"Ayam",          "Protein",         15, "kg",    5, 35000},
+        {"Telur",         "Protein",        100, "pcs",  20, 2500},
+        {"Bawang Merah",  "Bumbu & Rempah",  10, "kg",   3, 25000},
+        {"Bawang Putih",  "Bumbu & Rempah",   8, "kg",   3, 30000},
+        {"Sayur Bayam",   "Sayuran",         12, "kg",   4, 8000},
+        {"Tomat",         "Sayuran",          8, "kg",   3, 12000},
+        {"Air Mineral",   "Minuman",         48, "dus",  10, 25000},
+        {"Gelas Plastik", "Kemasan",        200, "pcs",  50, 500},
+    };
+    for (auto& inv : initInv) {
+        InventarisItem item;
+        item.nama      = std::get<0>(inv);
+        item.kategori  = std::get<1>(inv);
+        item.stok      = std::get<2>(inv);
+        item.satuan    = std::get<3>(inv);
+        item.minStok   = std::get<4>(inv);
+        item.hargaBeli = std::get<5>(inv);
+        inventarisList->insert(item);
+    }
+    addLog(QString("📦 %1 item inventaris dimuat.").arg(inventarisList->getSize()));
+    refreshInventarisTable();
 
     // Setup tab Credits
     setupCreditTab();
@@ -378,6 +428,31 @@ void MainWindow::applyStyleSheet()
             background-color: #FFFFFF; color: #212121; border: 1px solid #BDBDBD;
         }
         QMenu::item:selected { background-color: #1976D2; color: #FFFFFF; }
+
+        QPushButton#btnTambahStok, QPushButton#btnProsesPembayaran,
+        QPushButton#btnGenerateLapKeu
+            { background-color: #1976D2; color: #FFFFFF; }
+        QPushButton#btnTambahStok:hover, QPushButton#btnProsesPembayaran:hover,
+        QPushButton#btnGenerateLapKeu:hover
+            { background-color: #1565C0; }
+
+        QPushButton#btnHapusStok
+            { background-color: #D32F2F; color: #FFFFFF; }
+        QPushButton#btnHapusStok:hover { background-color: #B71C1C; }
+
+        QPushButton#btnCetakStruk, QPushButton#btnSimpanInventaris,
+        QPushButton#btnSimpanLapKeu
+            { background-color: #388E3C; color: #FFFFFF; }
+        QPushButton#btnCetakStruk:hover, QPushButton#btnSimpanInventaris:hover,
+        QPushButton#btnSimpanLapKeu:hover
+            { background-color: #2E7D32; }
+
+        QPushButton#btnUpdateStok, QPushButton#btnHitungKembalian,
+        QPushButton#btnMuatOrder, QPushButton#btnCekStokMinim
+            { background-color: #F57C00; color: #FFFFFF; }
+        QPushButton#btnUpdateStok:hover, QPushButton#btnHitungKembalian:hover,
+        QPushButton#btnMuatOrder:hover, QPushButton#btnCekStokMinim:hover
+            { background-color: #E65100; }
 
         QSplitter::handle { background-color: #BDBDBD; }
     )");
@@ -1241,6 +1316,522 @@ void MainWindow::refreshStatisticsPanel()
                  .arg(occ).arg((int)allTables.size() - occ).arg(allTables.size());
 
     ui->statsDisplay->setText(stats);
+}
+
+// ============================================================
+//  REFRESH: INVENTARIS
+// ============================================================
+void MainWindow::refreshInventarisTable()
+{
+    auto items = inventarisList->getAll();
+    ui->inventarisTable->setRowCount((int)items.size());
+    int menipis = 0;
+    for (int i = 0; i < (int)items.size(); i++) {
+        InventarisItem* inv = items[i];
+        if (inv->menipis()) menipis++;
+        ui->inventarisTable->setItem(i, 0, new QTableWidgetItem(QString::number(inv->id)));
+        ui->inventarisTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(inv->nama)));
+        ui->inventarisTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(inv->kategori)));
+        ui->inventarisTable->setItem(i, 3, new QTableWidgetItem(QString::number(inv->stok)));
+        ui->inventarisTable->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(inv->satuan)));
+        ui->inventarisTable->setItem(i, 5, new QTableWidgetItem(QString::number(inv->minStok)));
+        ui->inventarisTable->setItem(i, 6, new QTableWidgetItem(formatPrice(inv->hargaBeli)));
+        ui->inventarisTable->setItem(i, 7, new QTableWidgetItem(formatPrice(inv->nilaiStok())));
+
+        auto* statusItem = new QTableWidgetItem(inv->menipis() ? "⚠ Menipis" : "✅ Aman");
+        statusItem->setForeground(inv->menipis() ? QColor(211, 47, 47) : QColor(56, 142, 60));
+        ui->inventarisTable->setItem(i, 8, statusItem);
+
+        if (inv->menipis()) {
+            for (int col = 0; col < 9; col++) {
+                if (ui->inventarisTable->item(i, col))
+                    ui->inventarisTable->item(i, col)->setBackground(QColor(255, 243, 224));
+            }
+        }
+    }
+    ui->lblInvTotalBahan->setText(QString::number(items.size()));
+    ui->lblInvStokMenipis->setText(QString("<font color='%1'>%2</font>")
+        .arg(menipis > 0 ? "#D32F2F" : "#388E3C").arg(menipis));
+    ui->lblInvNilaiTotal->setText(formatPrice(inventarisList->getTotalNilaiStok()));
+}
+
+// ============================================================
+//  REFRESH: TRANSAKSI
+// ============================================================
+void MainWindow::refreshTransaksiTable()
+{
+    auto& transaksiVec = transaksiList->getAll();
+    ui->transaksiTable->setRowCount((int)transaksiVec.size());
+    for (int i = 0; i < (int)transaksiVec.size(); i++) {
+        Transaksi* t = transaksiVec[i];
+        ui->transaksiTable->setItem(i, 0, new QTableWidgetItem(QString::number(t->transaksiId)));
+        ui->transaksiTable->setItem(i, 1, new QTableWidgetItem(QString::number(t->orderId)));
+        ui->transaksiTable->setItem(i, 2, new QTableWidgetItem(QString("Meja %1").arg(t->tableNumber)));
+        ui->transaksiTable->setItem(i, 3, new QTableWidgetItem(formatPrice(t->subtotal)));
+        ui->transaksiTable->setItem(i, 4, new QTableWidgetItem(QString("%1%").arg(t->diskonPersen)));
+        ui->transaksiTable->setItem(i, 5, new QTableWidgetItem(formatPrice(t->totalBayar)));
+        ui->transaksiTable->setItem(i, 6, new QTableWidgetItem(QString::fromStdString(t->metodePembayaran)));
+        ui->transaksiTable->setItem(i, 7, new QTableWidgetItem(formatPrice(t->kembalian)));
+        ui->transaksiTable->setItem(i, 8, new QTableWidgetItem(QString::fromStdString(t->timestamp)));
+    }
+    refreshPembayaranStats();
+}
+
+void MainWindow::refreshPembayaranStats()
+{
+    int paid = (int)transaksiList->getAll().size();
+    auto& allOrders = orderQueue->getAllOrders();
+    int belumLunas = (int)std::count_if(allOrders.begin(), allOrders.end(),
+        [](Order* o){ return o->status != "paid"; });
+
+    ui->lblPembTotalTranx->setText(QString::number(paid));
+    ui->lblPembPendapatan->setText(formatPrice(transaksiList->getTotalPendapatan()));
+    ui->lblPembBelumLunas->setText(QString("<font color='%1'>%2</font>")
+        .arg(belumLunas > 0 ? "#D32F2F" : "#388E3C").arg(belumLunas));
+}
+
+// ============================================================
+//  REFRESH: LAPORAN KEUANGAN
+// ============================================================
+void MainWindow::refreshLaporanKeuangan()
+{
+    auto& transaksiVec = transaksiList->getAll();
+    ui->laporanKeuTable->setRowCount((int)transaksiVec.size());
+    for (int i = 0; i < (int)transaksiVec.size(); i++) {
+        Transaksi* t = transaksiVec[i];
+        ui->laporanKeuTable->setItem(i, 0, new QTableWidgetItem(QString::number(t->transaksiId)));
+        ui->laporanKeuTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(t->timestamp)));
+        ui->laporanKeuTable->setItem(i, 2, new QTableWidgetItem(QString("Meja %1").arg(t->tableNumber)));
+        ui->laporanKeuTable->setItem(i, 3, new QTableWidgetItem(formatPrice(t->subtotal)));
+        ui->laporanKeuTable->setItem(i, 4, new QTableWidgetItem(
+            t->diskonPersen > 0 ? QString("-%1% (%2)")
+                .arg(t->diskonPersen).arg(formatPrice(t->subtotal * t->diskonPersen / 100.0))
+            : "-"));
+        ui->laporanKeuTable->setItem(i, 5, new QTableWidgetItem(formatPrice(t->totalBayar)));
+        ui->laporanKeuTable->setItem(i, 6, new QTableWidgetItem(QString::fromStdString(t->metodePembayaran)));
+    }
+}
+
+// ============================================================
+//  SLOT: INVENTARIS
+// ============================================================
+void MainWindow::onTambahStok()
+{
+    try {
+        QString nama = ui->inputInvNama->text().trimmed();
+        if (nama.isEmpty())
+            throw RestaurantException("Nama bahan tidak boleh kosong!");
+
+        InventarisItem item;
+        item.nama      = nama.toStdString();
+        item.kategori  = ui->inputInvKategori->currentText().toStdString();
+        item.stok      = ui->inputInvStok->value();
+        item.satuan    = ui->inputInvSatuan->currentText().toStdString();
+        item.minStok   = ui->inputInvMinStok->value();
+        item.hargaBeli = ui->inputInvHargaBeli->value();
+
+        InventarisItem* inserted = inventarisList->insert(item);
+        actionStack->push(Action("add_inventaris",
+            "Tambah bahan: " + item.nama, inserted->id));
+
+        QString logMsg = QString("📦 Bahan ditambah: %1 | %2 %3 | Harga: %4")
+            .arg(nama, QString::number(item.stok),
+                 QString::fromStdString(item.satuan), formatPrice(item.hargaBeli));
+        ui->invLogDisplay->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + logMsg);
+        addLog(logMsg);
+
+        ui->inputInvNama->clear();
+        ui->inputInvStok->setValue(0);
+        ui->inputInvHargaBeli->setValue(0);
+        refreshInventarisTable();
+        refreshHistoryList();
+
+    } catch (const RestaurantException& e) {
+        QMessageBox::warning(this, "Peringatan", QString::fromStdString(e.what()));
+    }
+}
+
+void MainWindow::onUpdateStok()
+{
+    int row = ui->inventarisTable->currentRow();
+    if (row < 0) {
+        QMessageBox::information(this, "Info", "Pilih bahan yang stoknya akan diupdate!"); return;
+    }
+    int id    = ui->inventarisTable->item(row, 0)->text().toInt();
+    QString nama = ui->inventarisTable->item(row, 1)->text();
+    int delta = ui->inputInvUpdateJumlah->value();
+
+    InventarisItem* item = inventarisList->findById(id);
+    if (!item) { QMessageBox::warning(this, "Error", "Bahan tidak ditemukan!"); return; }
+
+    int oldStok = item->stok;
+    inventarisList->updateStok(id, delta);
+
+    QString logMsg = QString("🔄 Update stok: %1 | %2 → %3 (%4%5)")
+        .arg(nama).arg(oldStok).arg(item->stok)
+        .arg(delta >= 0 ? "+" : "").arg(delta);
+    ui->invLogDisplay->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + logMsg);
+    addLog(logMsg);
+
+    actionStack->push(Action("update_stok", "Update stok: " + nama.toStdString(), id));
+    refreshInventarisTable();
+    refreshHistoryList();
+}
+
+void MainWindow::onHapusStok()
+{
+    int row = ui->inventarisTable->currentRow();
+    if (row < 0) {
+        QMessageBox::information(this, "Info", "Pilih bahan yang akan dihapus!"); return;
+    }
+    int id    = ui->inventarisTable->item(row, 0)->text().toInt();
+    QString nama = ui->inventarisTable->item(row, 1)->text();
+
+    auto reply = QMessageBox::question(this, "Konfirmasi Hapus",
+        QString("Hapus bahan:\n%1?").arg(nama), QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes) return;
+
+    inventarisList->remove(id);
+    actionStack->push(Action("remove_inventaris", "Hapus bahan: " + nama.toStdString(), id));
+
+    QString logMsg = QString("🗑 Bahan dihapus: %1").arg(nama);
+    ui->invLogDisplay->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + logMsg);
+    addLog(logMsg);
+    refreshInventarisTable();
+    refreshHistoryList();
+}
+
+void MainWindow::onCekStokMinim()
+{
+    auto menipis = inventarisList->getMenipis();
+    if (menipis.empty()) {
+        QMessageBox::information(this, "Stok Aman", "✅ Semua stok bahan dalam kondisi aman!");
+        addLog("✅ Cek stok: semua bahan aman.");
+        return;
+    }
+
+    QString msg = QString("⚠ PERINGATAN: %1 bahan stok menipis!\n\n").arg(menipis.size());
+    for (auto* inv : menipis)
+        msg += QString("• %1: %2 %3 (min: %4)\n")
+            .arg(QString::fromStdString(inv->nama))
+            .arg(inv->stok).arg(QString::fromStdString(inv->satuan))
+            .arg(inv->minStok);
+
+    QMessageBox::warning(this, "Stok Menipis!", msg);
+    addLog(QString("⚠ Cek stok: %1 bahan menipis!").arg(menipis.size()));
+
+    // Highlight baris menipis
+    auto all = inventarisList->getAll();
+    for (int i = 0; i < (int)all.size(); i++) {
+        QColor bg = all[i]->menipis() ? QColor(255, 235, 238) : Qt::white;
+        for (int c = 0; c < ui->inventarisTable->columnCount(); c++) {
+            if (ui->inventarisTable->item(i, c))
+                ui->inventarisTable->item(i, c)->setBackground(bg);
+        }
+    }
+}
+
+void MainWindow::onSimpanInventaris()
+{
+    auto items = inventarisList->getAll();
+    if (FileIO::saveInventarisToFile(items)) {
+        addLog("💾 Inventaris disimpan ke inventaris.txt");
+        QMessageBox::information(this, "Berhasil", "Inventaris berhasil disimpan ke inventaris.txt!");
+    } else {
+        QMessageBox::critical(this, "Error", "Gagal menyimpan file!");
+    }
+}
+
+// ============================================================
+//  SLOT: PEMBAYARAN
+// ============================================================
+void MainWindow::onMuatOrder()
+{
+    int orderId = ui->inputPembOrderId->value();
+    auto& allOrders = orderQueue->getAllOrders();
+    auto it = STLUtils::findOrderById(const_cast<std::list<Order*>&>(allOrders), orderId);
+
+    if (it == allOrders.end()) {
+        QMessageBox::warning(this, "Tidak Ditemukan",
+            QString("Order #%1 tidak ditemukan!").arg(orderId));
+        return;
+    }
+
+    Order* o = *it;
+    if (o->status == "paid") {
+        QMessageBox::information(this, "Sudah Lunas",
+            QString("Order #%1 sudah dibayar.").arg(orderId));
+        return;
+    }
+
+    // Tampilkan ringkasan
+    QString ringkasan = QString("Order #%1 | Meja %2 | %3\n")
+        .arg(o->orderId).arg(o->tableNumber)
+        .arg(o->priority == 1 ? "⭐ VIP" : "Normal");
+    ringkasan += QString("Status: %1\n\n").arg(QString::fromStdString(o->status));
+    ringkasan += "Item:\n";
+    for (auto& item : o->items)
+        ringkasan += QString("  • %1 x%2 = %3\n")
+            .arg(QString::fromStdString(item.menuItemName))
+            .arg(item.quantity).arg(formatPrice(item.subtotal));
+    ringkasan += QString("\nSubtotal: %1").arg(formatPrice(o->totalPrice));
+
+    ui->pembRingkasanDisplay->setText(ringkasan);
+    ui->lblPembSubtotal->setText(QString("Subtotal: %1").arg(formatPrice(o->totalPrice)));
+
+    // Hitung total berdasarkan diskon saat ini
+    double diskon = ui->inputPembDiskon->value();
+    double total  = o->totalPrice * (1.0 - diskon / 100.0);
+    ui->lblPembTotal->setText(QString("Total Bayar: %1").arg(formatPrice(total)));
+    ui->inputPembBayar->setValue(total);
+
+    addLog(QString("🔍 Order #%1 dimuat ke form pembayaran.").arg(orderId));
+}
+
+void MainWindow::onHitungKembalian()
+{
+    int orderId = ui->inputPembOrderId->value();
+    auto& allOrders = orderQueue->getAllOrders();
+    auto it = STLUtils::findOrderById(const_cast<std::list<Order*>&>(allOrders), orderId);
+    if (it == allOrders.end()) {
+        QMessageBox::warning(this, "Error", "Muat order terlebih dahulu!"); return;
+    }
+
+    double subtotal = (*it)->totalPrice;
+    double diskon   = ui->inputPembDiskon->value();
+    double total    = subtotal * (1.0 - diskon / 100.0);
+    double bayar    = ui->inputPembBayar->value();
+    double kembalian = bayar - total;
+
+    ui->lblPembTotal->setText(QString("Total Bayar: %1").arg(formatPrice(total)));
+
+    if (kembalian >= 0) {
+        ui->lblPembKembalian->setText(QString("<b>Kembalian: <font color='#388E3C'>%1</font></b>")
+            .arg(formatPrice(kembalian)));
+    } else {
+        ui->lblPembKembalian->setText(QString("<b>Kurang: <font color='#D32F2F'>%1</font></b>")
+            .arg(formatPrice(-kembalian)));
+    }
+}
+
+void MainWindow::onProsesPembayaran()
+{
+    int orderId = ui->inputPembOrderId->value();
+    auto& allOrders = orderQueue->getAllOrders();
+    auto it = STLUtils::findOrderById(const_cast<std::list<Order*>&>(allOrders), orderId);
+
+    if (it == allOrders.end()) {
+        QMessageBox::warning(this, "Error", "Order tidak ditemukan! Muat order terlebih dahulu.");
+        return;
+    }
+
+    Order* o = *it;
+    if (o->status == "paid") {
+        QMessageBox::information(this, "Sudah Lunas", "Order ini sudah dibayar!"); return;
+    }
+
+    double subtotal = o->totalPrice;
+    double diskon   = ui->inputPembDiskon->value();
+    double total    = subtotal * (1.0 - diskon / 100.0);
+    double bayar    = ui->inputPembBayar->value();
+    QString metode  = ui->inputPembMetode->currentText();
+
+    bool isTunai = metode.contains("Tunai");
+    if (isTunai && bayar < total) {
+        QMessageBox::warning(this, "Kurang Bayar",
+            QString("Uang yang diberikan (%1) kurang dari total (%2)!")
+                .arg(formatPrice(bayar), formatPrice(total)));
+        return;
+    }
+
+    // Buat transaksi
+    Transaksi* t = transaksiList->tambah(
+        orderId, o->tableNumber, subtotal, diskon,
+        bayar, metode.toStdString(), getCurrentTimestamp());
+
+    // Update status order
+    o->status = "paid";
+    tableList->freeTable(o->tableNumber);
+
+    actionStack->push(Action("payment",
+        "Pembayaran order #" + std::to_string(orderId) + " via " + metode.toStdString(),
+        orderId));
+
+    addLog(QString("💰 Order #%1 LUNAS | %2 | Diskon: %3% | Total: %4 | Kembalian: %5")
+        .arg(orderId).arg(metode)
+        .arg(diskon).arg(formatPrice(total)).arg(formatPrice(t->kembalian)));
+
+    // Reset form
+    ui->pembRingkasanDisplay->clear();
+    ui->lblPembSubtotal->setText("Subtotal: Rp 0");
+    ui->lblPembTotal->setText("Total Bayar: Rp 0");
+    ui->lblPembKembalian->setText("Kembalian: Rp 0");
+    ui->inputPembDiskon->setValue(0);
+    ui->inputPembBayar->setValue(0);
+
+    refreshTransaksiTable();
+    refreshOrderTable();
+    refreshTableDisplay();
+    refreshDashboard();
+    refreshHistoryList();
+
+    QMessageBox::information(this, "Pembayaran Berhasil!",
+        QString("✅ Order #%1 berhasil dibayar!\n\nTotal: %2\nKembalian: %3")
+            .arg(orderId).arg(formatPrice(total)).arg(formatPrice(t->kembalian)));
+}
+
+void MainWindow::onCetakStruk()
+{
+    int orderId = ui->inputPembOrderId->value();
+    Transaksi* t = transaksiList->findByOrderId(orderId);
+
+    if (!t) {
+        // Coba cari dari order yang belum bayar
+        auto& allOrders = orderQueue->getAllOrders();
+        auto it = STLUtils::findOrderById(const_cast<std::list<Order*>&>(allOrders), orderId);
+        if (it == allOrders.end()) {
+            QMessageBox::warning(this, "Error", "Order tidak ditemukan!"); return;
+        }
+        Order* o = *it;
+        // Preview struk sebelum bayar
+        QString struk;
+        struk += "============================\n";
+        struk += "   RESTORAN KAMI\n";
+        struk += "============================\n";
+        struk += QString("Order #%1 | Meja %2\n").arg(o->orderId).arg(o->tableNumber);
+        struk += QString("Status: %1\n").arg(QString::fromStdString(o->status));
+        struk += "----------------------------\n";
+        for (auto& item : o->items)
+            struk += QString("%-16s x%2\n   = %3\n")
+                .arg(QString::fromStdString(item.menuItemName)).arg(item.quantity)
+                .arg(formatPrice(item.subtotal));
+        struk += "----------------------------\n";
+        struk += QString("TOTAL : %1\n").arg(formatPrice(o->totalPrice));
+        struk += "============================\n";
+        struk += "   Belum Lunas\n";
+        struk += "============================\n";
+        ui->strukDisplay->setText(struk);
+        return;
+    }
+
+    // Struk lunas
+    auto& allOrders = orderQueue->getAllOrders();
+    auto it = STLUtils::findOrderById(const_cast<std::list<Order*>&>(allOrders), orderId);
+    Order* o = (it != allOrders.end()) ? *it : nullptr;
+
+    QString struk;
+    struk += "============================\n";
+    struk += "   RESTORAN KAMI\n";
+    struk += "============================\n";
+    struk += QString("Tanggal: %1\n").arg(QString::fromStdString(t->timestamp));
+    struk += QString("No. Transaksi: %1\n").arg(t->transaksiId);
+    struk += QString("Order #%1 | Meja %2\n").arg(t->orderId).arg(t->tableNumber);
+    struk += "----------------------------\n";
+    if (o) {
+        for (auto& item : o->items)
+            struk += QString("%-16s x%2\n   %3\n")
+                .arg(QString::fromStdString(item.menuItemName)).arg(item.quantity)
+                .arg(formatPrice(item.subtotal));
+    }
+    struk += "----------------------------\n";
+    struk += QString("Subtotal : %1\n").arg(formatPrice(t->subtotal));
+    if (t->diskonPersen > 0)
+        struk += QString("Diskon   : -%1%  (%2)\n")
+            .arg(t->diskonPersen)
+            .arg(formatPrice(t->subtotal * t->diskonPersen / 100.0));
+    struk += QString("TOTAL    : %1\n").arg(formatPrice(t->totalBayar));
+    struk += QString("Bayar    : %1\n").arg(formatPrice(t->jumlahBayar));
+    struk += QString("Kembali  : %1\n").arg(formatPrice(t->kembalian));
+    struk += QString("Metode   : %1\n").arg(QString::fromStdString(t->metodePembayaran));
+    struk += "============================\n";
+    struk += "   Terima Kasih!\n";
+    struk += "============================\n";
+
+    ui->strukDisplay->setText(struk);
+    addLog(QString("🧾 Struk Order #%1 dicetak.").arg(orderId));
+}
+
+// ============================================================
+//  SLOT: LAPORAN KEUANGAN
+// ============================================================
+void MainWindow::onGenerateLapKeu()
+{
+    refreshLaporanKeuangan();
+
+    double totalPend  = transaksiList->getTotalPendapatan();
+    double totalDisk  = transaksiList->getTotalDiskon();
+    int    jmlTranx   = transaksiList->getSize();
+    double rataRata   = transaksiList->getRataRata();
+    double terbesar   = transaksiList->getTerbesar();
+
+    ui->lblKeuTotalPendapatan->setText(QString("<b>%1</b>").arg(formatPrice(totalPend)));
+    ui->lblKeuTotalDiskon->setText(formatPrice(totalDisk));
+    ui->lblKeuJmlTranx->setText(QString::number(jmlTranx));
+    ui->lblKeuRataRata->setText(formatPrice(rataRata));
+    ui->lblKeuTerbesar->setText(formatPrice(terbesar));
+
+    // Analisis per metode pembayaran
+    std::unordered_map<std::string, int> metodeCnt;
+    std::unordered_map<std::string, double> metodeTotal;
+    for (auto* t : transaksiList->getAll()) {
+        metodeCnt[t->metodePembayaran]++;
+        metodeTotal[t->metodePembayaran] += t->totalBayar;
+    }
+
+    QString analisis;
+    analisis += "=== RINGKASAN LAPORAN KEUANGAN ===\n\n";
+    analisis += QString("Total Pendapatan : %1\n").arg(formatPrice(totalPend));
+    analisis += QString("Total Diskon     : %1\n").arg(formatPrice(totalDisk));
+    analisis += QString("Jumlah Transaksi : %1\n").arg(jmlTranx);
+    analisis += QString("Rata-rata/Tranx  : %1\n").arg(formatPrice(rataRata));
+    analisis += QString("Transaksi Terbesar: %1\n\n").arg(formatPrice(terbesar));
+
+    analisis += "=== BREAKDOWN PER METODE ===\n";
+    for (auto& pair : metodeCnt) {
+        analisis += QString("• %1: %2 transaksi = %3\n")
+            .arg(QString::fromStdString(pair.first))
+            .arg(pair.second)
+            .arg(formatPrice(metodeTotal[pair.first]));
+    }
+
+    // Distribusi order status
+    auto summary = STLUtils::getOrderStatusSummary(orderQueue->getAllOrders());
+    analisis += "\n=== STATUS ORDER ===\n";
+    for (auto& s : std::vector<std::string>{"pending","preparing","served","paid"})
+        analisis += QString("• %1: %2\n")
+            .arg(QString::fromStdString(s)).arg(summary[s]);
+
+    // Stok menipis warning
+    auto menipis = inventarisList->getMenipis();
+    if (!menipis.empty()) {
+        analisis += "\n⚠ PERHATIAN - Stok Menipis:\n";
+        for (auto* inv : menipis)
+            analisis += QString("• %1: %2 %3\n")
+                .arg(QString::fromStdString(inv->nama))
+                .arg(inv->stok).arg(QString::fromStdString(inv->satuan));
+    }
+
+    analisis += "\nLaporan di-generate: " +
+        QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss");
+
+    ui->keuAnalysisDisplay->setText(analisis);
+    addLog(QString("📈 Laporan keuangan di-generate. Total pendapatan: %1, %2 transaksi.")
+        .arg(formatPrice(totalPend)).arg(jmlTranx));
+}
+
+void MainWindow::onSimpanLapKeu()
+{
+    auto& transaksiVec = transaksiList->getAll();
+    if (FileIO::saveLaporanKeuanganToFile(
+            transaksiVec,
+            transaksiList->getTotalPendapatan(),
+            transaksiList->getTotalDiskon())) {
+        addLog("💾 Laporan keuangan disimpan ke laporan_keuangan.txt");
+        QMessageBox::information(this, "Berhasil",
+            "Laporan keuangan berhasil disimpan ke laporan_keuangan.txt!");
+    } else {
+        QMessageBox::critical(this, "Error", "Gagal menyimpan laporan keuangan!");
+    }
 }
 
 // ============================================================

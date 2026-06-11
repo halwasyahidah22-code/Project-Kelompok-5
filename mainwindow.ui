@@ -248,297 +248,418 @@
        <attribute name="title">
         <string>🍜 Menu</string>
        </attribute>
-       <layout class="QHBoxLayout" name="menuLayout">
+       <layout class="QVBoxLayout" name="menuTabMainLayout">
         <item>
-         <widget class="QGroupBox" name="menuFormBox">
-          <property name="title">
-           <string>Tambah / Edit Menu</string>
+         <widget class="QTabWidget" name="menuSubTab">
+          <property name="tabPosition">
+           <enum>QTabWidget::TabPosition::North</enum>
           </property>
-          <layout class="QVBoxLayout" name="menuFormLayout">
-           <item>
-            <widget class="QLabel" name="lblMenuName">
-             <property name="text">
-              <string>Nama Menu:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="inputMenuName">
-             <property name="placeholderText">
-              <string>Contoh: Nasi Goreng</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblMenuCategory">
-             <property name="text">
-              <string>Kategori:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="inputMenuCategory">
-             <item>
-              <property name="text">
-               <string>Makanan Utama</string>
+
+          
+          <widget class="QWidget" name="menuListSubTab">
+           <attribute name="title">
+            <string>📋 Daftar Menu</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="menuLayout">
+            <item>
+             <widget class="QGroupBox" name="menuFormBox">
+              <property name="title">
+               <string>Tambah / Edit Menu</string>
               </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Minuman</string>
+              <layout class="QVBoxLayout" name="menuFormLayout">
+               <item>
+                <widget class="QLabel" name="lblMenuName">
+                 <property name="text">
+                  <string>Nama Menu:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="inputMenuName">
+                 <property name="placeholderText">
+                  <string>Contoh: Nasi Goreng</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblMenuCategory">
+                 <property name="text">
+                  <string>Kategori:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="inputMenuCategory">
+                 <item><property name="text"><string>Makanan Utama</string></property></item>
+                 <item><property name="text"><string>Minuman</string></property></item>
+                 <item><property name="text"><string>Snack</string></property></item>
+                 <item><property name="text"><string>Dessert</string></property></item>
+                 <item><property name="text"><string>Vegetarian</string></property></item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblMenuPrice">
+                 <property name="text">
+                  <string>Harga (Rp):</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="inputMenuPrice">
+                 <property name="prefix"><string>Rp </string></property>
+                 <property name="minimum"><double>0.000000000000000</double></property>
+                 <property name="maximum"><double>999999.000000000000000</double></property>
+                 <property name="singleStep"><double>1000.000000000000000</double></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="inputMenuAvailable">
+                 <property name="text"><string>Tersedia</string></property>
+                 <property name="checked"><bool>true</bool></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnAddMenuItem">
+                 <property name="text"><string>➕ Tambah Menu</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnRemoveMenuItem">
+                 <property name="text"><string>🗑 Hapus Menu Terpilih</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblMenuSep1">
+                 <property name="text"><string>──────────────</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblSearchMenu">
+                 <property name="text"><string>Cari Menu:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="searchMenuInput">
+                 <property name="placeholderText"><string>Nama atau ID...</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblSortMenu">
+                 <property name="text"><string>Urutkan:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="sortMenuCombo">
+                 <item><property name="text"><string>ID (default)</string></property></item>
+                 <item><property name="text"><string>Harga ↑</string></property></item>
+                 <item><property name="text"><string>Harga ↓</string></property></item>
+                 <item><property name="text"><string>Nama A-Z</string></property></item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnSaveMenu">
+                 <property name="text"><string>💾 Simpan ke File</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnLoadMenu">
+                 <property name="text"><string>📂 Muat dari File</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblMenuSep2">
+                 <property name="text"><string>──────────────</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblFilterCallback">
+                 <property name="text"><string>Filter &amp; Callback:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="filterCategoryCombo">
+                 <item><property name="text"><string>Makanan Utama</string></property></item>
+                 <item><property name="text"><string>Minuman</string></property></item>
+                 <item><property name="text"><string>Snack</string></property></item>
+                 <item><property name="text"><string>Dessert</string></property></item>
+                 <item><property name="text"><string>Vegetarian</string></property></item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnFilterCategory">
+                 <property name="text"><string>🔎 Filter Kategori (Callback)</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnResetFilter">
+                 <property name="text"><string>↩ Reset Filter</string></property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="menuFormSpacer">
+                 <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
+                 <property name="sizeHint" stdset="0"><size><width>0</width><height>0</height></size></property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="menuRightLayout">
+              <item>
+               <widget class="QLabel" name="lblMenuTableTitle">
+                <property name="text">
+                 <string>📋 Daftar Menu (Linked List + AVL Tree + Hash Table)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTableWidget" name="menuTable">
+                <property name="editTriggers">
+                 <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+                </property>
+                <property name="alternatingRowColors"><bool>true</bool></property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+                </property>
+                <column><property name="text"><string>ID</string></property></column>
+                <column><property name="text"><string>Nama</string></property></column>
+                <column><property name="text"><string>Kategori</string></property></column>
+                <column><property name="text"><string>Harga</string></property></column>
+                <column><property name="text"><string>Tersedia</string></property></column>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+
+          
+          <widget class="QWidget" name="inventarisSubTab">
+           <attribute name="title">
+            <string>📦 Inventaris / Stok</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="inventarisLayout">
+            <item>
+             <widget class="QGroupBox" name="inventarisFormBox">
+              <property name="title">
+               <string>Kelola Stok Bahan Baku</string>
               </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Snack</string>
+              <property name="maximumWidth">
+               <number>280</number>
               </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Dessert</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Vegetarian</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblMenuPrice">
-             <property name="text">
-              <string>Harga (Rp):</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="inputMenuPrice">
-             <property name="prefix">
-              <string>Rp </string>
-             </property>
-             <property name="minimum">
-              <double>0.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>999999.000000000000000</double>
-             </property>
-             <property name="singleStep">
-              <double>1000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="inputMenuAvailable">
-             <property name="text">
-              <string>Tersedia</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnAddMenuItem">
-             <property name="text">
-              <string>➕ Tambah Menu</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnRemoveMenuItem">
-             <property name="text">
-              <string>🗑 Hapus Menu Terpilih</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblMenuSep1">
-             <property name="text">
-              <string>──────────────</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblSearchMenu">
-             <property name="text">
-              <string>Cari Menu:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="searchMenuInput">
-             <property name="placeholderText">
-              <string>Nama atau ID...</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblSortMenu">
-             <property name="text">
-              <string>Urutkan:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="sortMenuCombo">
-             <item>
-              <property name="text">
-               <string>ID (default)</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Harga ↑</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Harga ↓</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Nama A-Z</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnSaveMenu">
-             <property name="text">
-              <string>💾 Simpan ke File</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnLoadMenu">
-             <property name="text">
-              <string>📂 Muat dari File</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblMenuSep2">
-             <property name="text">
-              <string>──────────────</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblFilterCallback">
-             <property name="text">
-              <string>Filter &amp; Callback:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="filterCategoryCombo">
-             <item>
-              <property name="text">
-               <string>Makanan Utama</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Minuman</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Snack</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Dessert</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Vegetarian</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnFilterCategory">
-             <property name="text">
-              <string>🔎 Filter Kategori (Callback)</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnResetFilter">
-             <property name="text">
-              <string>↩ Reset Filter</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="menuFormSpacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
+              <layout class="QVBoxLayout" name="inventarisFormLayout">
+               <item>
+                <widget class="QLabel" name="lblInvNama">
+                 <property name="text"><string>Nama Bahan:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="inputInvNama">
+                 <property name="placeholderText"><string>Contoh: Beras</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblInvKategori">
+                 <property name="text"><string>Kategori:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="inputInvKategori">
+                 <item><property name="text"><string>Bahan Pokok</string></property></item>
+                 <item><property name="text"><string>Bumbu &amp; Rempah</string></property></item>
+                 <item><property name="text"><string>Sayuran</string></property></item>
+                 <item><property name="text"><string>Protein</string></property></item>
+                 <item><property name="text"><string>Minuman</string></property></item>
+                 <item><property name="text"><string>Kemasan</string></property></item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblInvStok">
+                 <property name="text"><string>Stok (Unit):</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="inputInvStok">
+                 <property name="minimum"><number>0</number></property>
+                 <property name="maximum"><number>99999</number></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblInvSatuan">
+                 <property name="text"><string>Satuan:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="inputInvSatuan">
+                 <item><property name="text"><string>kg</string></property></item>
+                 <item><property name="text"><string>gram</string></property></item>
+                 <item><property name="text"><string>liter</string></property></item>
+                 <item><property name="text"><string>ml</string></property></item>
+                 <item><property name="text"><string>pcs</string></property></item>
+                 <item><property name="text"><string>dus</string></property></item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblInvMinStok">
+                 <property name="text"><string>Stok Minimum (alert):</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="inputInvMinStok">
+                 <property name="minimum"><number>0</number></property>
+                 <property name="maximum"><number>9999</number></property>
+                 <property name="value"><number>10</number></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblInvHargaBeli">
+                 <property name="text"><string>Harga Beli (Rp/unit):</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="inputInvHargaBeli">
+                 <property name="prefix"><string>Rp </string></property>
+                 <property name="minimum"><double>0</double></property>
+                 <property name="maximum"><double>9999999</double></property>
+                 <property name="singleStep"><double>1000</double></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnTambahStok">
+                 <property name="text"><string>➕ Tambah Bahan</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblInvSep1">
+                 <property name="text"><string>──────────────</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblInvUpdate">
+                 <property name="text"><string>Update Stok Terpilih:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="inputInvUpdateJumlah">
+                 <property name="minimum"><number>-9999</number></property>
+                 <property name="maximum"><number>99999</number></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnUpdateStok">
+                 <property name="text"><string>🔄 Update Stok (+/-)</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnHapusStok">
+                 <property name="text"><string>🗑 Hapus Bahan</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnCekStokMinim">
+                 <property name="text"><string>⚠ Cek Stok Menipis</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnSimpanInventaris">
+                 <property name="text"><string>💾 Simpan Inventaris</string></property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="inventarisFormSpacer">
+                 <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
+                 <property name="sizeHint" stdset="0"><size><width>0</width><height>0</height></size></property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="inventarisRightLayout">
+              <item>
+               <layout class="QHBoxLayout" name="inventarisStatRow">
+                <item>
+                 <widget class="QGroupBox" name="invStatBox1">
+                  <property name="title"><string>Total Bahan</string></property>
+                  <layout class="QVBoxLayout">
+                   <item>
+                    <widget class="QLabel" name="lblInvTotalBahan">
+                     <property name="text"><string>0</string></property>
+                     <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="invStatBox2">
+                  <property name="title"><string>Stok Menipis</string></property>
+                  <layout class="QVBoxLayout">
+                   <item>
+                    <widget class="QLabel" name="lblInvStokMenipis">
+                     <property name="text"><string>0</string></property>
+                     <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="invStatBox3">
+                  <property name="title"><string>Nilai Total Stok</string></property>
+                  <layout class="QVBoxLayout">
+                   <item>
+                    <widget class="QLabel" name="lblInvNilaiTotal">
+                     <property name="text"><string>Rp 0</string></property>
+                     <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QLabel" name="lblInvTableTitle">
+                <property name="text">
+                 <string>📦 Daftar Inventaris Bahan Baku</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTableWidget" name="inventarisTable">
+                <property name="editTriggers">
+                 <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+                </property>
+                <property name="alternatingRowColors"><bool>true</bool></property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+                </property>
+                <column><property name="text"><string>ID</string></property></column>
+                <column><property name="text"><string>Nama Bahan</string></property></column>
+                <column><property name="text"><string>Kategori</string></property></column>
+                <column><property name="text"><string>Stok</string></property></column>
+                <column><property name="text"><string>Satuan</string></property></column>
+                <column><property name="text"><string>Min. Stok</string></property></column>
+                <column><property name="text"><string>Harga Beli</string></property></column>
+                <column><property name="text"><string>Nilai Stok</string></property></column>
+                <column><property name="text"><string>Status</string></property></column>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTextEdit" name="invLogDisplay">
+                <property name="maximumHeight"><number>100</number></property>
+                <property name="readOnly"><bool>true</bool></property>
+                <property name="placeholderText"><string>Log aktivitas inventaris...</string></property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+
          </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="menuRightLayout">
-          <item>
-           <widget class="QLabel" name="lblMenuTableTitle">
-            <property name="text">
-             <string>📋 Daftar Menu (Linked List + AVL Tree + Hash Table)</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QTableWidget" name="menuTable">
-            <property name="editTriggers">
-             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
-            </property>
-            <property name="alternatingRowColors">
-             <bool>true</bool>
-            </property>
-            <property name="selectionBehavior">
-             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-            </property>
-            <column>
-             <property name="text">
-              <string>ID</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Nama</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Kategori</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Harga</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Tersedia</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
       </widget>
@@ -546,240 +667,378 @@
        <attribute name="title">
         <string>📋 Order</string>
        </attribute>
-       <layout class="QHBoxLayout" name="orderLayout">
+       <layout class="QVBoxLayout" name="orderTabMainLayout">
         <item>
-         <widget class="QGroupBox" name="orderCreateBox">
-          <property name="title">
-           <string>Buat Order Baru</string>
-          </property>
-          <layout class="QVBoxLayout" name="orderFormLayout">
-           <item>
-            <widget class="QLabel" name="lblOrderTable">
-             <property name="text">
-              <string>Nomor Meja:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="orderTableSelect"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblOrderPriority">
-             <property name="text">
-              <string>Prioritas:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="orderPrioritySelect">
-             <item>
-              <property name="text">
-               <string>Normal (2)</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>VIP (1)</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnCreateOrder">
-             <property name="text">
-              <string>🆕 Mulai Order Baru</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblOrderSep1">
-             <property name="text">
-              <string>──────────────</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblAddItem">
-             <property name="text">
-              <string>Tambah Item ke Order:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="orderMenuSelect"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblOrderQty">
-             <property name="text">
-              <string>Jumlah:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="orderQtyInput">
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="maximum">
-              <number>50</number>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnAddItemToOrder">
-             <property name="text">
-              <string>➕ Tambah Item</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnRemoveItemFromOrder">
-             <property name="text">
-              <string>➖ Hapus Item</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblCurrentOrderItems">
-             <property name="text">
-              <string>Item dalam Order Saat Ini:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QListWidget" name="orderItemList"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblOrderTotal">
-             <property name="text">
-              <string>Total: Rp 0</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnSubmitOrder">
-             <property name="text">
-              <string>✅ Submit Order</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lblOrderSep2">
-             <property name="text">
-              <string>──────────────</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnProcessNextOrder">
-             <property name="text">
-              <string>⚙ Proses Order Berikutnya</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="orderFormSpacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
+         <widget class="QTabWidget" name="orderSubTab">
+
+          
+          <widget class="QWidget" name="orderManajSubTab">
+           <attribute name="title">
+            <string>📝 Manajemen Order</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="orderLayout">
+            <item>
+             <widget class="QGroupBox" name="orderCreateBox">
+              <property name="title"><string>Buat Order Baru</string></property>
+              <layout class="QVBoxLayout" name="orderFormLayout">
+               <item>
+                <widget class="QLabel" name="lblOrderTable">
+                 <property name="text"><string>Nomor Meja:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="orderTableSelect"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblOrderPriority">
+                 <property name="text"><string>Prioritas:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="orderPrioritySelect">
+                 <item><property name="text"><string>Normal (2)</string></property></item>
+                 <item><property name="text"><string>VIP (1)</string></property></item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnCreateOrder">
+                 <property name="text"><string>🆕 Mulai Order Baru</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblOrderSep1">
+                 <property name="text"><string>──────────────</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblAddItem">
+                 <property name="text"><string>Tambah Item ke Order:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="orderMenuSelect"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblOrderQty">
+                 <property name="text"><string>Jumlah:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="orderQtyInput">
+                 <property name="minimum"><number>1</number></property>
+                 <property name="maximum"><number>50</number></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnAddItemToOrder">
+                 <property name="text"><string>➕ Tambah Item</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnRemoveItemFromOrder">
+                 <property name="text"><string>➖ Hapus Item</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblCurrentOrderItems">
+                 <property name="text"><string>Item dalam Order Saat Ini:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QListWidget" name="orderItemList"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblOrderTotal">
+                 <property name="text"><string>Total: Rp 0</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnSubmitOrder">
+                 <property name="text"><string>✅ Submit Order</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblOrderSep2">
+                 <property name="text"><string>──────────────</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnProcessNextOrder">
+                 <property name="text"><string>⚙ Proses Order Berikutnya</string></property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="orderFormSpacer">
+                 <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
+                 <property name="sizeHint" stdset="0"><size><width>0</width><height>0</height></size></property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="orderRightLayout">
+              <item>
+               <widget class="QLabel" name="lblOrderTableTitle">
+                <property name="text">
+                 <string>📋 Semua Order (Priority Queue + STL List)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTableWidget" name="orderTable">
+                <property name="editTriggers">
+                 <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+                </property>
+                <property name="alternatingRowColors"><bool>true</bool></property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+                </property>
+                <column><property name="text"><string>ID</string></property></column>
+                <column><property name="text"><string>Meja</string></property></column>
+                <column><property name="text"><string>Total</string></property></column>
+                <column><property name="text"><string>Status</string></property></column>
+                <column><property name="text"><string>Prioritas</string></property></column>
+                <column><property name="text"><string>Aksi</string></property></column>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="lblPendingTitle">
+                <property name="text">
+                 <string>⏳ Antrian Order (Priority Queue - FIFO + VIP):</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTableWidget" name="pendingOrdersTable">
+                <property name="editTriggers">
+                 <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+                </property>
+                <column><property name="text"><string>ID</string></property></column>
+                <column><property name="text"><string>Meja</string></property></column>
+                <column><property name="text"><string>Prioritas</string></property></column>
+                <column><property name="text"><string>Total</string></property></column>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+
+          
+          <widget class="QWidget" name="pembayaranSubTab">
+           <attribute name="title">
+            <string>💳 Pembayaran</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="pembayaranLayout">
+            <item>
+             <widget class="QGroupBox" name="pembayaranFormBox">
+              <property name="title"><string>Proses Pembayaran</string></property>
+              <property name="maximumWidth"><number>300</number></property>
+              <layout class="QVBoxLayout" name="pembayaranFormLayout">
+               <item>
+                <widget class="QLabel" name="lblPembOrderId">
+                 <property name="text"><string>ID Order:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="inputPembOrderId">
+                 <property name="minimum"><number>1</number></property>
+                 <property name="maximum"><number>99999</number></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnMuatOrder">
+                 <property name="text"><string>🔍 Muat Data Order</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblPembSep1">
+                 <property name="text"><string>──────────────</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblPembRingkasan">
+                 <property name="text"><string>Ringkasan Order:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QTextEdit" name="pembRingkasanDisplay">
+                 <property name="readOnly"><bool>true</bool></property>
+                 <property name="minimumHeight"><number>100</number></property>
+                 <property name="maximumHeight"><number>130</number></property>
+                 <property name="placeholderText"><string>Muat order terlebih dahulu...</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblPembSubtotal">
+                 <property name="text"><string>Subtotal: Rp 0</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblPembSep2">
+                 <property name="text"><string>──────────────</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblPembMetode">
+                 <property name="text"><string>Metode Pembayaran:</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="inputPembMetode">
+                 <item><property name="text"><string>💵 Tunai</string></property></item>
+                 <item><property name="text"><string>💳 Kartu Debit/Kredit</string></property></item>
+                 <item><property name="text"><string>📱 Transfer/QRIS</string></property></item>
+                 <item><property name="text"><string>🎟 Voucher</string></property></item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblPembDiskon">
+                 <property name="text"><string>Diskon (%):</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="inputPembDiskon">
+                 <property name="suffix"><string>%</string></property>
+                 <property name="minimum"><double>0</double></property>
+                 <property name="maximum"><double>100</double></property>
+                 <property name="singleStep"><double>5</double></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblPembBayar">
+                 <property name="text"><string>Jumlah Dibayar (Tunai):</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="inputPembBayar">
+                 <property name="prefix"><string>Rp </string></property>
+                 <property name="minimum"><double>0</double></property>
+                 <property name="maximum"><double>99999999</double></property>
+                 <property name="singleStep"><double>10000</double></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblPembTotal">
+                 <property name="text"><string>Total Bayar: Rp 0</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnHitungKembalian">
+                 <property name="text"><string>🧮 Hitung Kembalian</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="lblPembKembalian">
+                 <property name="text"><string>Kembalian: Rp 0</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnProsesPembayaran">
+                 <property name="text"><string>✅ Konfirmasi Pembayaran</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnCetakStruk">
+                 <property name="text"><string>🧾 Cetak Struk</string></property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="pembayaranFormSpacer">
+                 <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
+                 <property name="sizeHint" stdset="0"><size><width>0</width><height>0</height></size></property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="pembayaranRightLayout">
+              <item>
+               <layout class="QHBoxLayout" name="pembStatRow">
+                <item>
+                 <widget class="QGroupBox" name="pembStatBox1">
+                  <property name="title"><string>Total Transaksi Hari Ini</string></property>
+                  <layout class="QVBoxLayout">
+                   <item>
+                    <widget class="QLabel" name="lblPembTotalTranx">
+                     <property name="text"><string>0</string></property>
+                     <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="pembStatBox2">
+                  <property name="title"><string>Pendapatan Lunas</string></property>
+                  <layout class="QVBoxLayout">
+                   <item>
+                    <widget class="QLabel" name="lblPembPendapatan">
+                     <property name="text"><string>Rp 0</string></property>
+                     <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="pembStatBox3">
+                  <property name="title"><string>Belum Lunas</string></property>
+                  <layout class="QVBoxLayout">
+                   <item>
+                    <widget class="QLabel" name="lblPembBelumLunas">
+                     <property name="text"><string>0</string></property>
+                     <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QLabel" name="lblTransaksiTitle">
+                <property name="text">
+                 <string>💳 Riwayat Transaksi Pembayaran</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTableWidget" name="transaksiTable">
+                <property name="editTriggers">
+                 <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+                </property>
+                <property name="alternatingRowColors"><bool>true</bool></property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+                </property>
+                <column><property name="text"><string>ID Transaksi</string></property></column>
+                <column><property name="text"><string>ID Order</string></property></column>
+                <column><property name="text"><string>Meja</string></property></column>
+                <column><property name="text"><string>Subtotal</string></property></column>
+                <column><property name="text"><string>Diskon</string></property></column>
+                <column><property name="text"><string>Total Bayar</string></property></column>
+                <column><property name="text"><string>Metode</string></property></column>
+                <column><property name="text"><string>Kembalian</string></property></column>
+                <column><property name="text"><string>Waktu</string></property></column>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTextEdit" name="strukDisplay">
+                <property name="maximumHeight"><number>130</number></property>
+                <property name="readOnly"><bool>true</bool></property>
+                <property name="fontFamily"><string>Courier New</string></property>
+                <property name="placeholderText"><string>Struk pembayaran akan tampil di sini...</string></property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+
          </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="orderRightLayout">
-          <item>
-           <widget class="QLabel" name="lblOrderTableTitle">
-            <property name="text">
-             <string>📋 Semua Order (Priority Queue + STL List)</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QTableWidget" name="orderTable">
-            <property name="editTriggers">
-             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
-            </property>
-            <property name="alternatingRowColors">
-             <bool>true</bool>
-            </property>
-            <property name="selectionBehavior">
-             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-            </property>
-            <column>
-             <property name="text">
-              <string>ID</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Meja</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Status</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Prioritas</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Aksi</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lblPendingTitle">
-            <property name="text">
-             <string>⏳ Antrian Order (Priority Queue - FIFO + VIP):</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QTableWidget" name="pendingOrdersTable">
-            <property name="editTriggers">
-             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
-            </property>
-            <column>
-             <property name="text">
-              <string>ID</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Meja</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Prioritas</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Total</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-         </layout>
         </item>
        </layout>
       </widget>
@@ -1082,137 +1341,259 @@
        <attribute name="title">
         <string>📁 Riwayat</string>
        </attribute>
-       <layout class="QVBoxLayout" name="historyLayout">
+       <layout class="QVBoxLayout" name="historyTabMainLayout">
         <item>
-         <layout class="QHBoxLayout" name="historyCtrlRow">
-          <item>
-           <widget class="QPushButton" name="btnUndoAction">
-            <property name="text">
-             <string>↩ Undo Aksi Terakhir</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnGenerateReport">
-            <property name="text">
-             <string>📊 Generate Laporan</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lblSortReport">
-            <property name="text">
-             <string>Urutkan Laporan:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="reportSortCombo">
+         <widget class="QTabWidget" name="historySubTab">
+
+          
+          <widget class="QWidget" name="riwayatSubTab">
+           <attribute name="title">
+            <string>📜 Riwayat &amp; Laporan Order</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="historyLayout">
             <item>
-             <property name="text">
-              <string>Total ↓</string>
-             </property>
+             <layout class="QHBoxLayout" name="historyCtrlRow">
+              <item>
+               <widget class="QPushButton" name="btnUndoAction">
+                <property name="text"><string>↩ Undo Aksi Terakhir</string></property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnGenerateReport">
+                <property name="text"><string>📊 Generate Laporan</string></property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="lblSortReport">
+                <property name="text"><string>Urutkan Laporan:</string></property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="reportSortCombo">
+                <item><property name="text"><string>Total ↓</string></property></item>
+                <item><property name="text"><string>Total ↑</string></property></item>
+                <item><property name="text"><string>ID</string></property></item>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnSortReport">
+                <property name="text"><string>🔃 Sort</string></property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnSaveReport">
+                <property name="text"><string>💾 Simpan Laporan</string></property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnRunSTLDemo">
+                <property name="text"><string>🧪 Demo STL find+count</string></property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
-             <property name="text">
-              <string>Total ↑</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>ID</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnSortReport">
-            <property name="text">
-             <string>🔃 Sort</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnSaveReport">
-            <property name="text">
-             <string>💾 Simpan Laporan</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnRunSTLDemo">
-            <property name="text">
-             <string>🧪 Demo STL find+count</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QSplitter" name="historySplitter">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-          <widget class="QWidget" name="historyListPane">
-           <layout class="QVBoxLayout">
-            <item>
-             <widget class="QLabel" name="lblHistoryTitle">
-              <property name="text">
-               <string>📜 Log Aksi (Undo Stack):</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QListWidget" name="historyList"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="reportPane">
-           <layout class="QVBoxLayout">
-            <item>
-             <widget class="QLabel" name="lblReportTitle">
-              <property name="text">
-               <string>📊 Laporan Order:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QTableWidget" name="reportTable">
-              <property name="editTriggers">
-               <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
-              </property>
-              <property name="alternatingRowColors">
-               <bool>true</bool>
-              </property>
-              <column>
-               <property name="text">
-                <string>ID</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Meja</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Total</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Status</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Waktu</string>
-               </property>
-              </column>
+             <widget class="QSplitter" name="historySplitter">
+              <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+              <widget class="QWidget" name="historyListPane">
+               <layout class="QVBoxLayout">
+                <item>
+                 <widget class="QLabel" name="lblHistoryTitle">
+                  <property name="text"><string>📜 Log Aksi (Undo Stack):</string></property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QListWidget" name="historyList"/>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="reportPane">
+               <layout class="QVBoxLayout">
+                <item>
+                 <widget class="QLabel" name="lblReportTitle">
+                  <property name="text"><string>📊 Laporan Order:</string></property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTableWidget" name="reportTable">
+                  <property name="editTriggers">
+                   <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+                  </property>
+                  <property name="alternatingRowColors"><bool>true</bool></property>
+                  <column><property name="text"><string>ID</string></property></column>
+                  <column><property name="text"><string>Meja</string></property></column>
+                  <column><property name="text"><string>Total</string></property></column>
+                  <column><property name="text"><string>Status</string></property></column>
+                  <column><property name="text"><string>Waktu</string></property></column>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </item>
            </layout>
           </widget>
+
+          
+          <widget class="QWidget" name="keuanganSubTab">
+           <attribute name="title">
+            <string>📈 Laporan Keuangan</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="keuanganLayout">
+            <item>
+             <layout class="QHBoxLayout" name="keuanganCtrlRow">
+              <item>
+               <widget class="QLabel" name="lblKeuPeriode">
+                <property name="text"><string>Filter Periode:</string></property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="keuPeriodeCombo">
+                <item><property name="text"><string>Semua Waktu</string></property></item>
+                <item><property name="text"><string>Hari Ini</string></property></item>
+                <item><property name="text"><string>Minggu Ini</string></property></item>
+                <item><property name="text"><string>Bulan Ini</string></property></item>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnGenerateLapKeu">
+                <property name="text"><string>📊 Generate Laporan Keuangan</string></property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnSimpanLapKeu">
+                <property name="text"><string>💾 Simpan ke File</string></property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="keuCtrlSpacer">
+                <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+                <property name="sizeHint" stdset="0"><size><width>0</width><height>0</height></size></property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="keuSummaryRow">
+              <item>
+               <widget class="QGroupBox" name="keuBox1">
+                <property name="title"><string>💰 Total Pendapatan</string></property>
+                <layout class="QVBoxLayout">
+                 <item>
+                  <widget class="QLabel" name="lblKeuTotalPendapatan">
+                   <property name="text"><string>Rp 0</string></property>
+                   <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="keuBox2">
+                <property name="title"><string>📦 Total Diskon</string></property>
+                <layout class="QVBoxLayout">
+                 <item>
+                  <widget class="QLabel" name="lblKeuTotalDiskon">
+                   <property name="text"><string>Rp 0</string></property>
+                   <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="keuBox3">
+                <property name="title"><string>🧾 Jml Transaksi</string></property>
+                <layout class="QVBoxLayout">
+                 <item>
+                  <widget class="QLabel" name="lblKeuJmlTranx">
+                   <property name="text"><string>0</string></property>
+                   <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="keuBox4">
+                <property name="title"><string>📊 Rata-rata/Transaksi</string></property>
+                <layout class="QVBoxLayout">
+                 <item>
+                  <widget class="QLabel" name="lblKeuRataRata">
+                   <property name="text"><string>Rp 0</string></property>
+                   <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="keuBox5">
+                <property name="title"><string>🏆 Transaksi Terbesar</string></property>
+                <layout class="QVBoxLayout">
+                 <item>
+                  <widget class="QLabel" name="lblKeuTerbesar">
+                   <property name="text"><string>Rp 0</string></property>
+                   <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QSplitter" name="keuSplitter">
+              <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+              <widget class="QWidget" name="keuTablePane">
+               <layout class="QVBoxLayout">
+                <item>
+                 <widget class="QLabel" name="lblKeuTableTitle">
+                  <property name="text"><string>📋 Detail Transaksi Keuangan:</string></property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTableWidget" name="laporanKeuTable">
+                  <property name="editTriggers">
+                   <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+                  </property>
+                  <property name="alternatingRowColors"><bool>true</bool></property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+                  </property>
+                  <column><property name="text"><string>ID Transaksi</string></property></column>
+                  <column><property name="text"><string>Waktu</string></property></column>
+                  <column><property name="text"><string>Meja</string></property></column>
+                  <column><property name="text"><string>Subtotal</string></property></column>
+                  <column><property name="text"><string>Diskon</string></property></column>
+                  <column><property name="text"><string>Total</string></property></column>
+                  <column><property name="text"><string>Metode</string></property></column>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="keuAnalysisPane">
+               <layout class="QVBoxLayout">
+                <item>
+                 <widget class="QLabel" name="lblKeuAnalysisTitle">
+                  <property name="text"><string>📈 Analisis &amp; Ringkasan:</string></property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTextEdit" name="keuAnalysisDisplay">
+                  <property name="readOnly"><bool>true</bool></property>
+                  <property name="placeholderText">
+                   <string>Klik "Generate Laporan Keuangan" untuk melihat analisis lengkap...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+
          </widget>
         </item>
        </layout>

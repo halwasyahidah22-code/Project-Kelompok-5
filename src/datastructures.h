@@ -88,6 +88,51 @@ struct Staff {
 };
 
 // ============================================================
+//  STRUCT: INVENTARIS / STOK BAHAN BAKU
+// ============================================================
+struct InventarisItem {
+    int id;
+    std::string nama;
+    std::string kategori;
+    int stok;
+    std::string satuan;
+    int minStok;
+    double hargaBeli;
+    InventarisItem* next; // untuk Linked List
+
+    InventarisItem(int i = 0, std::string n = "", std::string k = "Bahan Pokok",
+                   int s = 0, std::string sat = "kg", int minS = 10, double hb = 0.0)
+        : id(i), nama(n), kategori(k), stok(s), satuan(sat),
+          minStok(minS), hargaBeli(hb), next(nullptr) {}
+
+    double nilaiStok() const { return stok * hargaBeli; }
+    bool menipis()     const { return stok <= minStok; }
+};
+
+// ============================================================
+//  STRUCT: TRANSAKSI PEMBAYARAN
+// ============================================================
+struct Transaksi {
+    int transaksiId;
+    int orderId;
+    int tableNumber;
+    double subtotal;
+    double diskonPersen;
+    double totalBayar;
+    double jumlahBayar;  // uang yang diserahkan (untuk tunai)
+    double kembalian;
+    std::string metodePembayaran;
+    std::string timestamp;
+    Transaksi* next;
+
+    Transaksi(int tid = 0, int oid = 0, int tbl = 0)
+        : transaksiId(tid), orderId(oid), tableNumber(tbl),
+          subtotal(0), diskonPersen(0), totalBayar(0),
+          jumlahBayar(0), kembalian(0),
+          metodePembayaran("Tunai"), next(nullptr) {}
+};
+
+// ============================================================
 //  ACTION untuk Stack (History/Undo)
 // ============================================================
 struct Action {
@@ -936,8 +981,177 @@ namespace STLUtils {
 } // namespace STLUtils
 
 // ============================================================
-//  FILE HANDLING — Syarat 10
+//  INVENTARIS LINKED LIST — Manajemen Stok Bahan Baku
 // ============================================================
+class InventarisLinkedList {
+private:
+    InventarisItem* head;
+    int size;
+    int nextId;
+
+public:
+    InventarisLinkedList() : head(nullptr), size(0), nextId(1) {}
+
+    ~InventarisLinkedList() {
+        InventarisItem* curr = head;
+        while (curr) {
+            InventarisItem* tmp = curr->next;
+            delete curr;
+            curr = tmp;
+        }
+    }
+
+    InventarisItem* insert(const InventarisItem& item) {
+        InventarisItem* node = new InventarisItem(
+            nextId++, item.nama, item.kategori,
+            item.stok, item.satuan, item.minStok, item.hargaBeli);
+        if (!head) {
+            head = node;
+        } else {
+            InventarisItem* curr = head;
+            while (curr->next) curr = curr->next;
+            curr->next = node;
+        }
+        size++;
+        return node;
+    }
+
+    bool remove(int id) {
+        if (!head) return false;
+        if (head->id == id) {
+            InventarisItem* tmp = head;
+            head = head->next;
+            delete tmp; size--;
+            return true;
+        }
+        InventarisItem* curr = head;
+        while (curr->next && curr->next->id != id)
+            curr = curr->next;
+        if (!curr->next) return false;
+        InventarisItem* tmp = curr->next;
+        curr->next = tmp->next;
+        delete tmp; size--;
+        return true;
+    }
+
+    InventarisItem* findById(int id) const {
+        InventarisItem* curr = head;
+        while (curr) {
+            if (curr->id == id) return curr;
+            curr = curr->next;
+        }
+        return nullptr;
+    }
+
+    bool updateStok(int id, int delta) {
+        InventarisItem* item = findById(id);
+        if (!item) return false;
+        int newStok = item->stok + delta;
+        if (newStok < 0) newStok = 0;
+        item->stok = newStok;
+        return true;
+    }
+
+    std::vector<InventarisItem*> getAll() const {
+        std::vector<InventarisItem*> result;
+        InventarisItem* curr = head;
+        while (curr) { result.push_back(curr); curr = curr->next; }
+        return result;
+    }
+
+    std::vector<InventarisItem*> getMenipis() const {
+        std::vector<InventarisItem*> result;
+        InventarisItem* curr = head;
+        while (curr) {
+            if (curr->menipis()) result.push_back(curr);
+            curr = curr->next;
+        }
+        return result;
+    }
+
+    double getTotalNilaiStok() const {
+        double total = 0.0;
+        InventarisItem* curr = head;
+        while (curr) { total += curr->nilaiStok(); curr = curr->next; }
+        return total;
+    }
+
+    int getSize() const { return size; }
+};
+
+// ============================================================
+//  TRANSAKSI LINKED LIST — Riwayat Pembayaran
+// ============================================================
+class TransaksiList {
+private:
+    std::vector<Transaksi*> transaksiVec;
+    int nextId;
+
+public:
+    TransaksiList() : nextId(1) {}
+
+    ~TransaksiList() {
+        for (auto* t : transaksiVec) delete t;
+    }
+
+    Transaksi* tambah(int orderId, int tableNum, double subtotal,
+                       double diskonPersen, double jumlahBayar,
+                       const std::string& metode,
+                       const std::string& timestamp) {
+        double diskonNominal = subtotal * (diskonPersen / 100.0);
+        double total         = subtotal - diskonNominal;
+        double kembalian     = (metode == "Tunai" || metode == "💵 Tunai")
+                               ? jumlahBayar - total : 0.0;
+
+        Transaksi* t = new Transaksi(nextId++, orderId, tableNum);
+        t->subtotal          = subtotal;
+        t->diskonPersen      = diskonPersen;
+        t->totalBayar        = total;
+        t->jumlahBayar       = jumlahBayar;
+        t->kembalian         = kembalian;
+        t->metodePembayaran  = metode;
+        t->timestamp         = timestamp;
+        transaksiVec.push_back(t);
+        return t;
+    }
+
+    std::vector<Transaksi*>& getAll() { return transaksiVec; }
+
+    double getTotalPendapatan() const {
+        double total = 0.0;
+        for (auto* t : transaksiVec) total += t->totalBayar;
+        return total;
+    }
+
+    double getTotalDiskon() const {
+        double total = 0.0;
+        for (auto* t : transaksiVec)
+            total += t->subtotal * (t->diskonPersen / 100.0);
+        return total;
+    }
+
+    double getRataRata() const {
+        if (transaksiVec.empty()) return 0.0;
+        return getTotalPendapatan() / transaksiVec.size();
+    }
+
+    double getTerbesar() const {
+        double max = 0.0;
+        for (auto* t : transaksiVec)
+            if (t->totalBayar > max) max = t->totalBayar;
+        return max;
+    }
+
+    Transaksi* findByOrderId(int orderId) const {
+        for (auto* t : transaksiVec)
+            if (t->orderId == orderId) return t;
+        return nullptr;
+    }
+
+    int getSize() const { return (int)transaksiVec.size(); }
+};
+
+
 namespace FileIO {
     inline bool saveMenuToFile(const std::vector<MenuItem>& menus,
                                 const std::string& filename = "menu.txt") {
@@ -972,7 +1186,42 @@ namespace FileIO {
         return result;
     }
 
-    inline bool saveOrdersToFile(const std::vector<Order*>& orders,
+    inline bool saveInventarisToFile(const std::vector<InventarisItem*>& items,
+                                      const std::string& filename = "inventaris.txt") {
+        std::ofstream ofs(filename);
+        if (!ofs.is_open()) return false;
+        ofs << "=== DATA INVENTARIS BAHAN BAKU ===\n";
+        for (const auto* i : items)
+            ofs << i->id << "|" << i->nama << "|" << i->kategori << "|"
+                << i->stok << "|" << i->satuan << "|" << i->minStok
+                << "|" << i->hargaBeli << "\n";
+        ofs.close();
+        return true;
+    }
+
+    inline bool saveLaporanKeuanganToFile(const std::vector<Transaksi*>& transaksi,
+                                           double totalPendapatan, double totalDiskon,
+                                           const std::string& filename = "laporan_keuangan.txt") {
+        std::ofstream ofs(filename);
+        if (!ofs.is_open()) return false;
+        ofs << "=== LAPORAN KEUANGAN ===\n";
+        ofs << "Total Pendapatan: Rp" << (long long)totalPendapatan << "\n";
+        ofs << "Total Diskon   : Rp" << (long long)totalDiskon << "\n";
+        ofs << "Jumlah Transaksi: " << transaksi.size() << "\n";
+        ofs << "---------------------------\n";
+        for (const auto* t : transaksi)
+            ofs << "TID:" << t->transaksiId
+                << " | OID:" << t->orderId
+                << " | Meja:" << t->tableNumber
+                << " | Subtotal:Rp" << (long long)t->subtotal
+                << " | Diskon:" << t->diskonPersen << "%"
+                << " | Total:Rp" << (long long)t->totalBayar
+                << " | Metode:" << t->metodePembayaran
+                << " | " << t->timestamp << "\n";
+        ofs.close();
+        return true;
+    }
+
                                   const std::string& filename = "orders.txt") {
         std::ofstream ofs(filename);
         if (!ofs.is_open()) return false;
