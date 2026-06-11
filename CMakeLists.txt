@@ -7,6 +7,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Arahkan AUTOUIC ke folder root agar ui_mainwindow.h ter-generate dengan benar
+set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR})
+
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
 add_executable(RestaurantSystem
@@ -14,6 +17,12 @@ add_executable(RestaurantSystem
     src/mainwindow.cpp
     src/mainwindow.h
     src/datastructures.h
+    mainwindow.ui
+)
+
+target_include_directories(RestaurantSystem PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}   # agar ui_mainwindow.h bisa ditemukan
+    src
 )
 
 target_link_libraries(RestaurantSystem PRIVATE
@@ -22,6 +31,6 @@ target_link_libraries(RestaurantSystem PRIVATE
     Qt6::Widgets
 )
 
-# Jika Qt5
+# Fallback Qt5
 # find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
 # target_link_libraries(RestaurantSystem PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets)
