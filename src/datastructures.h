@@ -1222,6 +1222,7 @@ namespace FileIO {
         return true;
     }
 
+    inline bool saveOrdersToFile(const std::vector<Order*>& orders,
                                   const std::string& filename = "orders.txt") {
         std::ofstream ofs(filename);
         if (!ofs.is_open()) return false;
