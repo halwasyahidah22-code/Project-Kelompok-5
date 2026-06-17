@@ -4,6 +4,13 @@
 #include <ctime>
 #include <QPainter>
 #include <QFont>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QTabBar>
+#include <QFontDatabase>
+#include <QDebug>
+#include <QGroupBox>
+#include <QScrollArea>
 
 // ============================================================
 //  KONSTRUKTOR & DESTRUKTOR
@@ -22,6 +29,7 @@ MainWindow::MainWindow(QWidget* parent)
     menuAVL    = new AVLTree();
     menuHash   = new MenuHashTable();
     tableGraph = new TableGraph();
+    menuRecGraph = new RecommendationGraph();
     actionStack= new ActionStack();
     inventarisList = new InventarisLinkedList();
     transaksiList  = new TransaksiList();
@@ -30,6 +38,80 @@ MainWindow::MainWindow(QWidget* parent)
 
     // Setup UI dari file .ui (ganti semua setupXxxTab())
     ui->setupUi(this);
+
+    // Ganti Emoji menjadi Google Icon
+    replaceEmojisWithGoogleIcons();
+
+    // --- INJEKSI SIDEBAR LAYOUT (GOURMET OS 80% SIMILARITY) ---
+    if (QTabBar* tabBar = ui->tabWidget->findChild<QTabBar*>()) {
+        tabBar->hide(); // Sembunyikan tab bar bawaan di atas
+    }
+
+    QWidget* oldCentral = this->takeCentralWidget(); 
+    QWidget* newCentral = new QWidget(this);
+    newCentral->setObjectName("newCentral");
+    QHBoxLayout* rootLayout = new QHBoxLayout(newCentral);
+    rootLayout->setContentsMargins(0, 0, 0, 0);
+    rootLayout->setSpacing(0);
+
+    QWidget* sidebar = new QWidget(newCentral);
+    sidebar->setObjectName("sidebar");
+    sidebar->setFixedWidth(260); 
+    QVBoxLayout* sidebarLayout = new QVBoxLayout(sidebar);
+    sidebarLayout->setContentsMargins(24, 40, 24, 40);
+    sidebarLayout->setSpacing(10);
+
+    QLabel* logo = new QLabel("HALWA CANTIK\nADMIN TERMINAL", sidebar);
+    logo->setObjectName("sidebarLogo");
+    sidebarLayout->addWidget(logo);
+    sidebarLayout->addSpacing(40);
+
+    QStringList menuTitles = {"Dashboard", "Menu", "Order", "Table", "Staff", "Reports", "Credit"};
+    QList<QPushButton*> navButtons;
+    for (int i = 0; i < menuTitles.size(); ++i) {
+        QPushButton* btn = new QPushButton(menuTitles[i], sidebar);
+        btn->setObjectName("sidebarNavBtn");
+        btn->setCheckable(true);
+        btn->setCursor(Qt::PointingHandCursor);
+        if (i == 0) btn->setChecked(true);
+        sidebarLayout->addWidget(btn);
+        navButtons.append(btn);
+    }
+    
+    for (int i = 0; i < navButtons.size(); ++i) {
+        connect(navButtons[i], &QPushButton::clicked, [this, i]() {
+            ui->tabWidget->setCurrentIndex(i);
+        });
+    }
+
+    connect(ui->tabWidget, &QTabWidget::currentChanged, [navButtons](int index) {
+        if (index >= 0 && index < navButtons.size()) {
+            for(auto b : navButtons) b->setChecked(false);
+            navButtons[index]->setChecked(true);
+        }
+    });
+
+    sidebarLayout->addStretch();
+
+    QPushButton* btnSideNewOrder = new QPushButton("+ New Order", sidebar);
+    btnSideNewOrder->setObjectName("btnSideNewOrder");
+    btnSideNewOrder->setCursor(Qt::PointingHandCursor);
+    sidebarLayout->addWidget(btnSideNewOrder);
+    connect(btnSideNewOrder, &QPushButton::clicked, [this]() {
+        ui->tabWidget->setCurrentIndex(2);
+    });
+
+    // Wrap the right content in a QScrollArea for overflow
+    QScrollArea* scrollArea = new QScrollArea(newCentral);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setWidget(oldCentral);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setStyleSheet("QScrollArea { background-color: transparent; }");
+
+    rootLayout->addWidget(sidebar);
+    rootLayout->addWidget(scrollArea);
+    this->setCentralWidget(newCentral);
+    // ----------------------------------------------------------
 
     // Sambungkan semua signal ke slot
     setupConnections();
@@ -48,6 +130,47 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle("🍽 Sistem Manajemen Restoran - Qt");
     statusBar()->showMessage("Sistem Manajemen Restoran siap digunakan.");
     refreshDashboard();
+
+    // INJEKSI REKOMENDASI MENU DI MENU TAB
+    if (ui->menuSubTab) {
+        QWidget* recTab = new QWidget();
+        QVBoxLayout* recLayout = new QVBoxLayout(recTab);
+        
+        QLabel* recLabel = new QLabel("Pilih Menu untuk melihat Rekomendasi Penjualan Bersama:");
+        QComboBox* recCombo = new QComboBox();
+        recCombo->setObjectName("cmbMenuRekomendasi");
+        
+        QPushButton* btnShowRec = new QPushButton("Lihat Rekomendasi");
+        btnShowRec->setIcon(getMaterialIcon("analytics", Qt::white));
+        
+        QListWidget* listRec = new QListWidget();
+        listRec->setObjectName("listMenuRekomendasi");
+        
+        recLayout->addWidget(recLabel);
+        recLayout->addWidget(recCombo);
+        recLayout->addWidget(btnShowRec);
+        recLayout->addWidget(listRec);
+        
+        ui->menuSubTab->addTab(recTab, "Rekomendasi");
+
+        connect(btnShowRec, &QPushButton::clicked, this, &MainWindow::onShowRecommendations);
+    }
+    
+    refreshMenuTable(); // Populate combobox now that it's created
+
+    // HIDE TABLE GRAPH VISUALIZATION
+    if (ui->graphDisplay) ui->graphDisplay->hide();
+    if (ui->btnRunBFS) ui->btnRunBFS->hide();
+    if (ui->btnRunDFS) ui->btnRunDFS->hide();
+    if (auto w = this->findChild<QPushButton*>("btnZoomIn")) w->hide();
+    if (auto w = this->findChild<QPushButton*>("btnZoomOut")) w->hide();
+    
+    QList<QLabel*> allLabels = this->findChildren<QLabel*>();
+    for (QLabel* l : allLabels) {
+        if (l->text().contains("Graph BFS / DFS") || l->text().contains("Output Graph")) {
+            l->hide();
+        }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -60,6 +183,7 @@ MainWindow::~MainWindow()
     delete menuAVL;
     delete menuHash;
     delete tableGraph;
+    delete menuRecGraph;
     delete actionStack;
     delete inventarisList;
     delete transaksiList;
@@ -72,6 +196,14 @@ MainWindow::~MainWindow()
 // ============================================================
 void MainWindow::setupConnections()
 {
+    // ---- Inisialisasi Graph & Animasi ----
+    graphScene = new QGraphicsScene(this);
+    ui->graphDisplay->setScene(graphScene);
+    ui->graphDisplay->setRenderHint(QPainter::Antialiasing);
+    
+    animationTimer = new QTimer(this);
+    connect(animationTimer, &QTimer::timeout, this, &MainWindow::onAnimateGraphStep);
+
     // ── Dashboard ────────────────────────────────────────────
     connect(ui->btnRefreshDashboard, &QPushButton::clicked,
             this, &MainWindow::refreshDashboard);
@@ -102,11 +234,15 @@ void MainWindow::setupConnections()
     connect(ui->btnFreeTable,   &QPushButton::clicked, this, &MainWindow::onFreeTable);
     connect(ui->btnRunBFS,      &QPushButton::clicked, this, &MainWindow::onRunBFS);
     connect(ui->btnRunDFS,      &QPushButton::clicked, this, &MainWindow::onRunDFS);
+    connect(ui->btnZoomIn,      &QPushButton::clicked, this, &MainWindow::onZoomIn);
+    connect(ui->btnZoomOut,     &QPushButton::clicked, this, &MainWindow::onZoomOut);
 
     // ── Staf ─────────────────────────────────────────────────
     connect(ui->btnAddStaff,    &QPushButton::clicked, this, &MainWindow::onAddStaff);
     connect(ui->btnRemoveStaff, &QPushButton::clicked, this, &MainWindow::onRemoveStaff);
     connect(ui->btnRotateShift, &QPushButton::clicked, this, &MainWindow::onRotateShift);
+    connect(ui->filterStaffRole, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::refreshStaffTable);
 
     // ── Riwayat & Laporan ────────────────────────────────────
     connect(ui->btnUndoAction,    &QPushButton::clicked, this, &MainWindow::onUndoAction);
@@ -133,15 +269,37 @@ void MainWindow::setupConnections()
     connect(ui->btnSimpanLapKeu,   &QPushButton::clicked, this, &MainWindow::onSimpanLapKeu);
 
     // ── Tabel Header ─────────────────────────────────────────
-    ui->menuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->orderTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->pendingOrdersTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->tableDisplay->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->staffTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->reportTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->inventarisTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->transaksiTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->laporanKeuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->menuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->orderTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->pendingOrdersTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->tableDisplay->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->staffTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->reportTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->inventarisTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->transaksiTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->laporanKeuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    ui->menuTable->horizontalHeader()->setStretchLastSection(true);
+    ui->orderTable->horizontalHeader()->setStretchLastSection(true);
+    ui->pendingOrdersTable->horizontalHeader()->setStretchLastSection(true);
+    ui->tableDisplay->horizontalHeader()->setStretchLastSection(true);
+    ui->staffTable->horizontalHeader()->setStretchLastSection(true);
+    ui->reportTable->horizontalHeader()->setStretchLastSection(true);
+    ui->inventarisTable->horizontalHeader()->setStretchLastSection(true);
+    ui->transaksiTable->horizontalHeader()->setStretchLastSection(true);
+    ui->laporanKeuTable->horizontalHeader()->setStretchLastSection(true);
+
+    QList<QTableWidget*> tables = {
+        ui->menuTable, ui->orderTable, ui->pendingOrdersTable, 
+        ui->tableDisplay, ui->staffTable, ui->reportTable, 
+        ui->inventarisTable, ui->transaksiTable, ui->laporanKeuTable
+    };
+    for(QTableWidget* t : tables) {
+        if(t) {
+            t->verticalHeader()->setVisible(false);
+            t->verticalHeader()->setDefaultSectionSize(48);
+        }
+    }
 }
 
 // ============================================================
@@ -186,6 +344,10 @@ void MainWindow::setupInitialData()
                                                                      {"Siti Rahayu",  "Kasir"},
                                                                      {"Ahmad Fauzi",  "Koki"},
                                                                      {"Dewi Lestari", "Waiter"},
+                                                                     {"Andi Saputra", "Waiter"},
+                                                                     {"Rina Melati",  "Waiter"},
+                                                                     {"Chef Juna",    "Koki"},
+                                                                     {"Dimas Anggara","Kasir"},
                                                                      };
     for (auto& s : initialStaff) {
         Staff st(nextStaffId++, s.first, s.second);
@@ -264,197 +426,234 @@ void MainWindow::applyStyleSheet()
 {
     setStyleSheet(R"(
         QWidget {
-            background-color: #F5F5F5;
-            color: #212121;
-            font-family: Arial;
+            background-color: #f5f5f5; /* Light Gray */
+            color: #1a1c1c;
+            font-family: 'Poppins', 'Segoe UI', Arial;
+            font-size: 14px;
         }
-        QTabBar, QStatusBar, QMenuBar, QGroupBox,
-        QPushButton, QLineEdit, QTextEdit, QPlainTextEdit,
-        QComboBox, QSpinBox, QDoubleSpinBox, QCheckBox,
-        QTableWidget, QTableView, QListWidget, QLabel,
-        QHeaderView::section {
-            font-size: 13px;
+
+        QMainWindow, QDialog { background-color: #f5f5f5; }
+        QStatusBar { background-color: #ffffff; color: #454650; border-top: 1px solid #e0e0e0; }
+
+        /* --- SIDEBAR STYLING --- */
+        QWidget#sidebar { background-color: #021a54; } /* Deep Navy */
+        QLabel#sidebarLogo { color: #ffffff; font-size: 20px; font-weight: bold; }
+        QPushButton#sidebarNavBtn { 
+            background-color: transparent; 
+            color: #b5c4ff; 
+            text-align: left; 
+            padding: 10px 16px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            min-height: 44px; /* Slightly reduced touch target */
         }
-        QMainWindow { background-color: #F5F5F5; }
-        QStatusBar  { background-color: #E0E0E0; color: #424242; }
-
-        QTabWidget::pane {
-            border: 1px solid #BDBDBD;
-            border-radius: 0 6px 6px 6px;
-            background-color: #F5F5F5;
+        QPushButton#sidebarNavBtn:hover { 
+            background-color: rgba(255, 255, 255, 0.05); 
+            color: #ffffff; 
         }
-        QTabBar::tab {
-            background-color: #E0E0E0; color: #424242;
-            padding: 8px 18px; border-radius: 4px 4px 0 0;
-            margin-right: 2px; font-weight: bold;
+        QPushButton#sidebarNavBtn:checked { 
+            background-color: rgba(255, 255, 255, 0.1); 
+            color: #ffffff; 
         }
-        QTabBar::tab:selected           { background-color: #1976D2; color: #FFFFFF; }
-        QTabBar::tab:hover:!selected    { background-color: #BDBDBD; color: #212121; }
-
-        QPushButton {
-            padding: 8px 14px; border-radius: 6px; border: none;
-            background-color: #E0E0E0; color: #212121; font-weight: bold;
+        QPushButton#btnSideNewOrder { 
+            background-color: #ff85bb; /* Vibrant Pink */
+            color: #ffffff; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            min-height: 44px;
         }
-        QPushButton:hover    { background-color: #BDBDBD; }
-        QPushButton:pressed  { background-color: #9E9E9E; }
-        QPushButton:disabled { background-color: #EEEEEE; color: #9E9E9E; }
+        QPushButton#btnSideNewOrder:hover { background-color: #fd83b9; }
+        /* ----------------------- */
 
-        QPushButton#btnAddMenuItem, QPushButton#btnCreateOrder,
-        QPushButton#btnAddStaff,    QPushButton#btnGenerateReport,
-        QPushButton#btnFilterCategory, QPushButton#btnRunSTLDemo
-            { background-color: #1976D2; color: #FFFFFF; }
-        QPushButton#btnAddMenuItem:hover,   QPushButton#btnCreateOrder:hover,
-        QPushButton#btnAddStaff:hover,      QPushButton#btnGenerateReport:hover,
-        QPushButton#btnFilterCategory:hover,QPushButton#btnRunSTLDemo:hover
-            { background-color: #1565C0; }
-
-        QPushButton#btnRemoveMenuItem, QPushButton#btnRemoveStaff
-            { background-color: #D32F2F; color: #FFFFFF; }
-        QPushButton#btnRemoveMenuItem:hover, QPushButton#btnRemoveStaff:hover
-            { background-color: #B71C1C; }
-
-        QPushButton#btnSubmitOrder, QPushButton#btnFreeTable
-            { background-color: #388E3C; color: #FFFFFF; }
-        QPushButton#btnSubmitOrder:hover, QPushButton#btnFreeTable:hover
-            { background-color: #2E7D32; }
-
-        QPushButton#btnProcessNextOrder, QPushButton#btnUndoAction,
-        QPushButton#btnRotateShift
-            { background-color: #F57C00; color: #FFFFFF; }
-        QPushButton#btnProcessNextOrder:hover, QPushButton#btnUndoAction:hover,
-        QPushButton#btnRotateShift:hover
-            { background-color: #E65100; }
-
-        QPushButton#btnOccupyTable
-            { background-color: #D32F2F; color: #FFFFFF; }
-        QPushButton#btnOccupyTable:hover { background-color: #B71C1C; }
-
-        QGroupBox {
-            background-color: #F5F5F5; color: #212121; font-weight: bold;
-            border: 1px solid #BDBDBD; border-radius: 6px;
-            margin-top: 10px; padding: 8px;
-        }
+        /* Typography & Headings */
+        QLabel { background-color: transparent; color: #1a1c1c; }
         QGroupBox::title {
-            subcontrol-origin: margin; padding: 0 6px; color: #1976D2;
+            subcontrol-origin: margin; padding: 0 8px; 
+            color: #021a54; font-weight: bold; font-size: 15px;
         }
 
-        QLineEdit, QTextEdit, QPlainTextEdit {
-            background-color: #FFFFFF; color: #212121;
-            border: 1px solid #BDBDBD; border-radius: 4px;
-            padding: 5px; selection-background-color: #1976D2; selection-color: #FFFFFF;
+        /* Container Surfaces (Cards) Level 1 */
+        QGroupBox {
+            background-color: #ffffff;
+            color: #1a1c1c;
+            border: 1px solid #e0e0e0; /* Low contrast outline */
+            border-radius: 12px; /* Cards 12px */
+            margin-top: 20px; 
+            padding: 16px;
         }
-        QLineEdit:focus, QTextEdit:focus { border: 1px solid #1976D2; }
-        QLineEdit:disabled { background-color: #EEEEEE; color: #9E9E9E; }
 
-        QComboBox {
-            background-color: #FFFFFF; color: #212121;
-            border: 1px solid #BDBDBD; border-radius: 4px; padding: 5px 8px;
+        /* Inputs & Controls */
+        QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+            background-color: #ffffff; 
+            color: #1a1c1c;
+            border: 1px solid #e0e0e0; 
+            border-radius: 6px;
+            padding: 6px 10px; 
+            min-height: 30px;
+            selection-background-color: #dce1ff; 
+            selection-color: #00164e;
         }
-        QComboBox:focus { border: 1px solid #1976D2; }
+        QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus { 
+            border: 1px solid #021a54; /* Focus transitions to Deep Navy */
+        }
+        QLineEdit:disabled { background-color: #f5f5f5; color: #454650; }
+
         QComboBox::drop-down { border: none; width: 24px; }
         QComboBox QAbstractItemView {
-            background-color: #FFFFFF; color: #212121;
-            selection-background-color: #1976D2; selection-color: #FFFFFF;
-            border: 1px solid #BDBDBD;
+            background-color: #ffffff; color: #1a1c1c;
+            selection-background-color: #dce1ff; selection-color: #00164e;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
         }
 
-        QSpinBox, QDoubleSpinBox {
-            background-color: #FFFFFF; color: #212121;
-            border: 1px solid #BDBDBD; border-radius: 4px; padding: 5px;
-        }
-        QSpinBox:focus, QDoubleSpinBox:focus { border: 1px solid #1976D2; }
-
-        QCheckBox { color: #212121; spacing: 6px; }
+        QCheckBox { color: #1a1c1c; spacing: 8px; min-height: 38px; }
         QCheckBox::indicator {
-            width: 16px; height: 16px;
-            border: 1px solid #BDBDBD; border-radius: 3px; background-color: #FFFFFF;
+            width: 18px; height: 18px;
+            border: 1px solid #e0e0e0; 
+            border-radius: 4px; background-color: #ffffff;
         }
-        QCheckBox::indicator:checked { background-color: #1976D2; border-color: #1976D2; }
+        QCheckBox::indicator:checked { background-color: #021a54; border-color: #021a54; }
 
-        QTableWidget, QTableView {
-            background-color: #FFFFFF; color: #212121;
-            gridline-color: #E0E0E0; border: 1px solid #BDBDBD;
-            alternate-background-color: #F0F4FF;
-            selection-background-color: #BBDEFB; selection-color: #212121;
+        /* Buttons (Base) */
+        QPushButton {
+            padding: 8px 16px; 
+            border-radius: 6px; border: none;
+            background-color: transparent; 
+            border: 1px solid #021a54; /* Tertiary by default */
+            color: #021a54; 
+            font-weight: bold; font-size: 13px;
+            min-height: 38px; /* Not too big, not too small */
+        }
+        QPushButton:hover { background-color: rgba(2, 26, 84, 0.05); }
+        QPushButton:pressed { background-color: rgba(2, 26, 84, 0.1); }
+        QPushButton:disabled { background-color: #f5f5f5; color: #454650; border: 1px solid #e0e0e0; }
+
+        /* Primary Navy Buttons */
+        QPushButton#btnAddMenuItem, QPushButton#btnCreateOrder,
+        QPushButton#btnAddStaff,    QPushButton#btnGenerateReport,
+        QPushButton#btnFilterCategory, QPushButton#btnRunSTLDemo,
+        QPushButton#btnTambahStok, QPushButton#btnProsesPembayaran,
+        QPushButton#btnGenerateLapKeu, QPushButton#btnZoomIn, QPushButton#btnZoomOut { 
+            background-color: #021a54; color: #ffffff; border: none;
+        }
+        QPushButton#btnAddMenuItem:hover, QPushButton#btnCreateOrder:hover,
+        QPushButton#btnAddStaff:hover, QPushButton#btnGenerateReport:hover,
+        QPushButton#btnFilterCategory:hover, QPushButton#btnRunSTLDemo:hover,
+        QPushButton#btnTambahStok:hover, QPushButton#btnProsesPembayaran:hover,
+        QPushButton#btnGenerateLapKeu:hover, QPushButton#btnZoomIn:hover, QPushButton#btnZoomOut:hover { 
+            background-color: #000520; 
+        }
+
+        /* Secondary Pink Buttons */
+        QPushButton#btnSubmitOrder, QPushButton#btnFreeTable,
+        QPushButton#btnUpdateStok, QPushButton#btnHitungKembalian,
+        QPushButton#btnMuatOrder, QPushButton#btnCekStokMinim,
+        QPushButton#btnProcessNextOrder, QPushButton#btnUndoAction,
+        QPushButton#btnRotateShift, QPushButton#btnRunBFS, QPushButton#btnRunDFS { 
+            background-color: #ff85bb; color: #ffffff; border: none;
+        }
+        QPushButton#btnSubmitOrder:hover, QPushButton#btnFreeTable:hover,
+        QPushButton#btnUpdateStok:hover, QPushButton#btnHitungKembalian:hover,
+        QPushButton#btnMuatOrder:hover, QPushButton#btnCekStokMinim:hover,
+        QPushButton#btnProcessNextOrder:hover, QPushButton#btnUndoAction:hover,
+        QPushButton#btnRotateShift:hover, QPushButton#btnRunBFS:hover, QPushButton#btnRunDFS:hover { 
+            background-color: #fd83b9; 
+        }
+
+        /* Error/Destructive Buttons */
+        QPushButton#btnRemoveMenuItem, QPushButton#btnRemoveStaff,
+        QPushButton#btnHapusStok, QPushButton#btnOccupyTable { 
+            background-color: #ba1a1a; color: #ffffff; border: none;
+        }
+        QPushButton#btnRemoveMenuItem:hover, QPushButton#btnRemoveStaff:hover,
+        QPushButton#btnHapusStok:hover, QPushButton#btnOccupyTable:hover { 
+            background-color: #93000a; 
+        }
+
+        /* Success/Tertiary Buttons */
+        QPushButton#btnCetakStruk, QPushButton#btnSimpanInventaris,
+        QPushButton#btnSimpanLapKeu { 
+            background-color: #e9bace; color: #2e1221; 
+        }
+        QPushButton#btnCetakStruk:hover, QPushButton#btnSimpanInventaris:hover,
+        QPushButton#btnSimpanLapKeu:hover { 
+            background-color: #ffd8e8; 
+        }
+
+        /* Tab Widget */
+        QTabWidget::pane {
+            border: none;
+            background-color: #f9f9f9;
+            margin-top: 10px;
+        }
+        QTabBar::tab {
+            background-color: #f3f3f3; color: #454650;
+            padding: 12px 24px; border-radius: 8px;
+            margin-right: 8px; font-weight: bold;
+        }
+        QTabBar::tab:selected { background-color: #021a54; color: #ffffff; }
+        QTabBar::tab:hover:!selected { background-color: #e8e8e8; color: #1a1c1c; }
+
+        /* Tables & Lists */
+        QTableWidget, QTableView, QListWidget {
+            background-color: #ffffff; color: #1a1c1c;
+            gridline-color: transparent; border: 1px solid rgba(2, 26, 84, 0.05);
+            border-radius: 12px;
+            alternate-background-color: #f3f3f3;
+            selection-background-color: #dce1ff; selection-color: #00164e;
         }
         QHeaderView::section {
-            background-color: #1976D2; color: #FFFFFF;
-            padding: 6px; font-weight: bold;
-            border: none; border-right: 1px solid #1565C0;
+            background-color: #021a54; color: #ffffff;
+            padding: 12px; font-weight: bold; font-size: 14px;
+            border: none; border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
-        QHeaderView::section:last { border-right: none; }
-        QTableWidget::item:selected { background-color: #BBDEFB; color: #212121; }
-        QTableCornerButton::section { background-color: #1976D2; border: none; }
+        QHeaderView::section:first { border-top-left-radius: 12px; }
+        QHeaderView::section:last { border-right: none; border-top-right-radius: 12px; }
+        QTableCornerButton::section { background-color: #021a54; border: none; }
 
-        QListWidget {
-            background-color: #FFFFFF; color: #212121;
-            border: 1px solid #BDBDBD; border-radius: 4px;
-            alternate-background-color: #F0F4FF;
+        QListWidget::item { padding: 12px; color: #1a1c1c; border-bottom: 1px solid #f3f3f3; }
+        QListWidget::item:selected { background-color: #dce1ff; color: #00164e; border-radius: 8px; }
+        QListWidget::item:hover:!selected { background-color: #f3f3f3; border-radius: 8px; }
+
+        /* GraphicsView (Canvas) */
+        QGraphicsView {
+            background-color: #ffffff;
+            border: 1px solid rgba(2, 26, 84, 0.05);
+            border-radius: 16px;
         }
-        QListWidget::item { padding: 4px; color: #212121; }
-        QListWidget::item:selected            { background-color: #1976D2; color: #FFFFFF; }
-        QListWidget::item:hover:!selected     { background-color: #E3F2FD; }
 
+        /* Scrollbars */
         QScrollBar:vertical {
-            background-color: #F5F5F5; width: 10px; border-radius: 5px;
+            background-color: transparent; width: 12px; margin: 4px;
         }
         QScrollBar::handle:vertical {
-            background-color: #BDBDBD; border-radius: 5px; min-height: 30px;
+            background-color: #c5c6d1; border-radius: 6px; min-height: 40px;
         }
-        QScrollBar::handle:vertical:hover { background-color: #9E9E9E; }
+        QScrollBar::handle:vertical:hover { background-color: #757681; }
         QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
 
         QScrollBar:horizontal {
-            background-color: #F5F5F5; height: 10px; border-radius: 5px;
+            background-color: transparent; height: 12px; margin: 4px;
         }
         QScrollBar::handle:horizontal {
-            background-color: #BDBDBD; border-radius: 5px; min-width: 30px;
+            background-color: #c5c6d1; border-radius: 6px; min-width: 40px;
         }
-        QScrollBar::handle:horizontal:hover { background-color: #9E9E9E; }
+        QScrollBar::handle:horizontal:hover { background-color: #757681; }
         QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0px; }
 
-        QLabel { background-color: transparent; color: #212121; }
-
+        /* Tooltips & Menus */
         QToolTip {
-            background-color: #FFFDE7; color: #212121;
-            border: 1px solid #F9A825; border-radius: 4px; padding: 4px;
+            background-color: #021a54; color: #ffffff;
+            border: none; border-radius: 6px; padding: 8px;
         }
-        QMessageBox { background-color: #F5F5F5; color: #212121; }
-        QMessageBox QLabel { color: #212121; }
-
-        QMenuBar { background-color: #E0E0E0; color: #212121; }
-        QMenuBar::item:selected { background-color: #1976D2; color: #FFFFFF; }
-        QMenu {
-            background-color: #FFFFFF; color: #212121; border: 1px solid #BDBDBD;
-        }
-        QMenu::item:selected { background-color: #1976D2; color: #FFFFFF; }
-
-        QPushButton#btnTambahStok, QPushButton#btnProsesPembayaran,
-        QPushButton#btnGenerateLapKeu
-            { background-color: #1976D2; color: #FFFFFF; }
-        QPushButton#btnTambahStok:hover, QPushButton#btnProsesPembayaran:hover,
-        QPushButton#btnGenerateLapKeu:hover
-            { background-color: #1565C0; }
-
-        QPushButton#btnHapusStok
-            { background-color: #D32F2F; color: #FFFFFF; }
-        QPushButton#btnHapusStok:hover { background-color: #B71C1C; }
-
-        QPushButton#btnCetakStruk, QPushButton#btnSimpanInventaris,
-        QPushButton#btnSimpanLapKeu
-            { background-color: #388E3C; color: #FFFFFF; }
-        QPushButton#btnCetakStruk:hover, QPushButton#btnSimpanInventaris:hover,
-        QPushButton#btnSimpanLapKeu:hover
-            { background-color: #2E7D32; }
-
-        QPushButton#btnUpdateStok, QPushButton#btnHitungKembalian,
-        QPushButton#btnMuatOrder, QPushButton#btnCekStokMinim
-            { background-color: #F57C00; color: #FFFFFF; }
-        QPushButton#btnUpdateStok:hover, QPushButton#btnHitungKembalian:hover,
-        QPushButton#btnMuatOrder:hover, QPushButton#btnCekStokMinim:hover
-            { background-color: #E65100; }
-
-        QSplitter::handle { background-color: #BDBDBD; }
+        QMenuBar { background-color: #ffffff; color: #1a1c1c; }
+        QMenuBar::item:selected { background-color: #f3f3f3; border-radius: 4px; }
+        QMenu { background-color: #ffffff; color: #1a1c1c; border: 1px solid #e8e8e8; border-radius: 8px; padding: 4px; }
+        QMenu::item { padding: 8px 24px; border-radius: 4px; }
+        QMenu::item:selected { background-color: #dce1ff; color: #00164e; }
     )");
 }
 
@@ -465,6 +664,113 @@ void MainWindow::addLog(const QString& msg)
 {
     QString ts = QDateTime::currentDateTime().toString("[hh:mm:ss] ");
     ui->logDisplay->append(ts + msg);
+}
+
+
+// ============================================================
+//  GOOGLE ICONS & EMOJI CLEANER
+// ============================================================
+QIcon MainWindow::getMaterialIcon(const QString& name, QColor color) {
+    if (!QFontDatabase::families().contains("Material Symbols Rounded")) {
+        return QIcon();
+    }
+    QFont font("Material Symbols Rounded");
+    font.setPixelSize(24);
+    QPixmap pixmap(32, 32);
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+    painter.setFont(font);
+    painter.setPen(color);
+    painter.drawText(pixmap.rect(), Qt::AlignCenter, name);
+    return QIcon(pixmap);
+}
+
+void MainWindow::replaceEmojisWithGoogleIcons() {
+    int fontId = QFontDatabase::addApplicationFont("MaterialSymbolsRounded.ttf");
+    if (fontId == -1) {
+        qDebug() << "Gagal memuat font Material Symbols Rounded. Pastikan file ttf ada di root folder.";
+    }
+
+    QList<QPushButton*> buttons = this->findChildren<QPushButton*>();
+    for (QPushButton* btn : buttons) {
+        QString text = btn->text();
+        QString cleanText;
+        for (QChar c : text) {
+            if (c.unicode() >= 32 && c.unicode() <= 126) {
+                cleanText += c;
+            }
+        }
+        // Force strip any leading garbage by seeking the first Capital letter
+        cleanText.replace(QRegularExpression("^[^A-Z]+"), "");
+        btn->setText(cleanText.trimmed());
+
+        QString lower = cleanText.toLower();
+        QString iconName = "";
+        QColor iconColor = Qt::white;
+        
+        if (btn->objectName() == "sidebarNavBtn") {
+            iconColor = QColor(181, 196, 255);
+        } else if (btn->objectName() == "btnCetakStruk" || btn->objectName() == "btnSimpanInventaris" || btn->objectName() == "btnSimpanLapKeu") {
+            iconColor = QColor(46, 18, 33);
+        } else if (btn->objectName() == "btnRunBFS" || btn->objectName() == "btnRunDFS" || btn->objectName() == "btnRotateShift") {
+             iconColor = QColor(119, 22, 75);
+        }
+
+        if (lower.contains("tambah")) iconName = "add_circle";
+        else if (lower.contains("hapus") || lower.contains("remove")) iconName = "delete";
+        else if (lower.contains("simpan") || lower.contains("save")) iconName = "save";
+        else if (lower.contains("order")) iconName = "receipt_long";
+        else if (lower.contains("bayar")) iconName = "payments";
+        else if (lower.contains("cetak")) iconName = "print";
+        else if (lower.contains("dashboard")) iconName = "home";
+        else if (lower.contains("menu")) iconName = "restaurant_menu";
+        else if (lower.contains("staf") || lower.contains("staff")) iconName = "group";
+        else if (lower.contains("meja") || lower.contains("table")) iconName = "table_restaurant";
+        else if (lower.contains("laporan") || lower.contains("report")) iconName = "analytics";
+        else if (lower.contains("zoom in")) iconName = "zoom_in";
+        else if (lower.contains("zoom out")) iconName = "zoom_out";
+        else if (lower.contains("filter")) iconName = "filter_alt";
+        else if (lower.contains("reset")) iconName = "restart_alt";
+        else if (lower.contains("undo")) iconName = "undo";
+        else if (lower.contains("cek")) iconName = "inventory_2";
+        else if (lower.contains("muat")) iconName = "file_download";
+        else if (lower.contains("konfirmasi")) iconName = "check_circle";
+
+        if (!iconName.isEmpty()) {
+            QIcon icon = getMaterialIcon(iconName, iconColor);
+            if (!icon.isNull()) {
+                btn->setIcon(icon);
+                btn->setIconSize(QSize(24, 24));
+            }
+        }
+    }
+
+    QList<QLabel*> labels = this->findChildren<QLabel*>();
+    for (QLabel* lbl : labels) {
+        if (lbl->objectName() == "lblCurrentTime" || lbl->objectName() == "lblClock") continue;
+        QString text = lbl->text();
+        QString cleanText;
+        for (QChar c : text) {
+            if (c.unicode() >= 32 && c.unicode() <= 126) {
+                cleanText += c;
+            }
+        }
+        cleanText.replace(QRegularExpression("^[^A-Z0-9]+"), "");
+        if(!cleanText.isEmpty()) lbl->setText(cleanText.trimmed());
+    }
+
+    QList<QGroupBox*> groups = this->findChildren<QGroupBox*>();
+    for (QGroupBox* grp : groups) {
+        QString text = grp->title();
+        QString cleanText;
+        for (QChar c : text) {
+            if (c.unicode() >= 32 && c.unicode() <= 126) {
+                cleanText += c;
+            }
+        }
+        cleanText.replace(QRegularExpression("^[^A-Z]+"), "");
+        grp->setTitle(cleanText.trimmed());
+    }
 }
 
 QString MainWindow::formatPrice(double price)
@@ -507,6 +813,14 @@ void MainWindow::refreshMenuTable()
         avail->setForeground(m->available ? Qt::darkGreen : Qt::red);
         ui->menuTable->setItem(i, 4, avail);
     }
+
+    // Update Rekomendasi ComboBox
+    if (auto cmb = this->findChild<QComboBox*>("cmbMenuRekomendasi")) {
+        cmb->clear();
+        for (auto m : items) {
+            cmb->addItem(QString::fromStdString(m->name));
+        }
+    }
 }
 
 void MainWindow::refreshOrderTable()
@@ -526,6 +840,22 @@ void MainWindow::refreshOrderTable()
         if (o->status == "paid")      status->setForeground(Qt::gray);
         ui->orderTable->setItem(row, 3, status);
         ui->orderTable->setItem(row, 4, new QTableWidgetItem(o->priority == 1 ? "⭐ VIP" : "Normal"));
+        
+        if (o->status == "preparing") {
+            QPushButton* btn = new QPushButton("Sajikan");
+            btn->setStyleSheet("background-color: #4CAF50; color: white; border-radius: 4px; font-weight: bold;");
+            connect(btn, &QPushButton::clicked, this, [this, o]() {
+                o->status = "served";
+                addLog(QString("🍽 Order #%1 (Meja %2) telah disajikan.").arg(o->orderId).arg(o->tableNumber));
+                actionStack->push(Action("update_order", "Order #" + std::to_string(o->orderId) + " disajikan", o->orderId));
+                refreshOrderTable();
+                refreshDashboard();
+                refreshHistoryList();
+            });
+            ui->orderTable->setCellWidget(row, 5, btn);
+        } else {
+            ui->orderTable->setItem(row, 5, new QTableWidgetItem("-"));
+        }
     }
     refreshPendingOrders();
 }
@@ -565,10 +895,33 @@ void MainWindow::refreshTableDisplay()
 
 void MainWindow::refreshStaffTable()
 {
-    auto staffs = staffList->getAll();
-    ui->staffTable->setRowCount((int)staffs.size());
-    for (int i = 0; i < (int)staffs.size(); i++) {
-        Staff* s = staffs[i];
+    auto allStaffs = staffList->getAll();
+    QString filterRole = ui->filterStaffRole->currentText();
+    
+    std::vector<Staff*> filteredStaffs;
+    QString onDutyText = "Sedang Bertugas: ";
+    int dutyCount = 0;
+
+    for (Staff* s : allStaffs) {
+        // Collect global on-duty status regardless of filter
+        if (s->onDuty) {
+            if (dutyCount > 0) onDutyText += ", ";
+            onDutyText += QString("%1 (%2)").arg(QString::fromStdString(s->name), QString::fromStdString(s->role));
+            dutyCount++;
+        }
+
+        // Apply filter for the table
+        if (filterRole == "Semua Jabatan" || QString::fromStdString(s->role) == filterRole) {
+            filteredStaffs.push_back(s);
+        }
+    }
+
+    if (dutyCount == 0) onDutyText += "-";
+    ui->lblOnDuty->setText(onDutyText);
+
+    ui->staffTable->setRowCount((int)filteredStaffs.size());
+    for (int i = 0; i < (int)filteredStaffs.size(); i++) {
+        Staff* s = filteredStaffs[i];
         ui->staffTable->setItem(i, 0, new QTableWidgetItem(QString::number(s->staffId)));
         ui->staffTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(s->name)));
         ui->staffTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(s->role)));
@@ -617,18 +970,95 @@ void MainWindow::refreshDashboard()
 
 void MainWindow::updateGraphDisplay()
 {
-    QString output;
-    auto all = tableGraph->getAllTables();
-    for (int tbl : all) {
-        output += QString("Meja %1 → ").arg(tbl);
+    // Cukup gambar ulang graf dasar tanpa animasi
+    drawGraph(0);
+}
+
+void MainWindow::drawGraph(int step)
+{
+    graphScene->clear();
+
+    // Koordinat statis untuk 8 meja (contoh layout pohon/hirarki)
+    // 1 -> 2, 3
+    // 2 -> 4, 5
+    // 3 -> 6, 7
+    // 4 -> 8
+    std::map<int, QPointF> positions = {
+        {1, QPointF(200, 40)},
+        {2, QPointF(100, 120)},
+        {3, QPointF(300, 120)},
+        {4, QPointF(50, 200)},
+        {5, QPointF(150, 200)},
+        {6, QPointF(250, 200)},
+        {7, QPointF(350, 200)},
+        {8, QPointF(50, 280)}
+    };
+
+    // Gambar Edges (Garis)
+    QPen edgePen(Qt::gray, 2);
+    auto allTables = tableGraph->getAllTables();
+    for (int tbl : allTables) {
         auto neighbors = tableGraph->getNeighbors(tbl);
-        for (int i = 0; i < (int)neighbors.size(); i++) {
-            output += QString("Meja %1").arg(neighbors[i]);
-            if (i < (int)neighbors.size() - 1) output += ", ";
+        for (int neighbor : neighbors) {
+            // Gambar garis jika id tetangga > tbl (agar tidak double)
+            if (neighbor > tbl) {
+                graphScene->addLine(positions[tbl].x() + 20, positions[tbl].y() + 20,
+                                    positions[neighbor].x() + 20, positions[neighbor].y() + 20,
+                                    edgePen);
+            }
         }
-        output += "\n";
     }
-    ui->graphDisplay->setText(output);
+
+    // Gambar Nodes (Lingkaran)
+    QFont font("Arial", 10, QFont::Bold);
+    for (int tbl : allTables) {
+        // Tentukan warna node: default biru muda
+        QColor nodeColor = QColor(173, 216, 230); 
+        
+        // Cek apakah node ini sudah dikunjungi sampai animasi step saat ini
+        bool visited = false;
+        for (int i = 0; i < step && i < (int)graphTraversalSequence.size(); i++) {
+            if (graphTraversalSequence[i] == tbl) {
+                visited = true;
+                break;
+            }
+        }
+
+        // Jika node sedang menyala di step terakhir, warnanya Oranye, jika sudah dilewati warnanya Hijau
+        if (visited) {
+            if (step > 0 && graphTraversalSequence[step - 1] == tbl) {
+                nodeColor = QColor(255, 165, 0); // Orange terang
+            } else {
+                nodeColor = QColor(144, 238, 144); // Hijau muda
+            }
+        }
+
+        QPainterPath path;
+        qreal px = positions[tbl].x();
+        qreal py = positions[tbl].y();
+        path.moveTo(px + 20, py + 12);
+        path.cubicTo(px + 20, py + 0, px + 40, py + 0, px + 40, py + 16);
+        path.cubicTo(px + 40, py + 28, px + 20, py + 36, px + 20, py + 40);
+        path.cubicTo(px + 20, py + 36, px + 0, py + 28, px + 0, py + 16);
+        path.cubicTo(px + 0, py + 0, px + 20, py + 0, px + 20, py + 12);
+
+        graphScene->addPath(path, QPen(Qt::darkBlue, 2), QBrush(nodeColor));
+
+        QGraphicsTextItem* text = graphScene->addText(QString::number(tbl), font);
+        // Posisikan text di tengah lingkaran/love
+        text->setPos(px + 14, py + 12);
+    }
+}
+
+void MainWindow::onAnimateGraphStep()
+{
+    graphAnimationStep++;
+    drawGraph(graphAnimationStep);
+
+    // Hentikan timer jika animasi selesai
+    if (graphAnimationStep >= (int)graphTraversalSequence.size()) {
+        animationTimer->stop();
+    }
 }
 
 // ============================================================
@@ -859,6 +1289,13 @@ void MainWindow::onCreateOrder()
         return;
     }
     int tableNum = ui->orderTableSelect->currentData().toInt();
+    
+    Table* t = tableList->findTable(tableNum);
+    if (t && t->isOccupied) {
+        QMessageBox::warning(this, "Meja Terisi", "Meja ini sudah terisi pesanan! Silakan pilih meja lain atau selesaikan pesanan sebelumnya di menu Pembayaran.");
+        return;
+    }
+
     int priority = (ui->orderPrioritySelect->currentIndex() == 0) ? 2 : 1;
 
     currentOrder = new Order(0, tableNum, priority);
@@ -976,7 +1413,38 @@ void MainWindow::onProcessNextOrder()
     }
 }
 
-void MainWindow::onUpdateOrderStatus() {}
+void MainWindow::onUpdateOrderStatus()
+{
+    int row = ui->orderTable->currentRow();
+    if (row < 0) {
+        QMessageBox::information(this, "Info", "Pilih pesanan yang akan diupdate statusnya dari tabel!");
+        return;
+    }
+    
+    int orderId = ui->orderTable->item(row, 0)->text().toInt();
+    
+    auto& allOrders = orderQueue->getAllOrders();
+    auto it = STLUtils::findOrderById(const_cast<std::list<Order*>&>(allOrders), orderId);
+    
+    if (it != allOrders.end()) {
+        Order* o = *it;
+        if (o->status == "preparing") {
+            o->status = "served";
+            addLog(QString("🍽 Order #%1 (Meja %2) telah disajikan.").arg(o->orderId).arg(o->tableNumber));
+            actionStack->push(Action("update_order", "Order #" + std::to_string(o->orderId) + " disajikan", o->orderId));
+            
+            refreshOrderTable();
+            refreshDashboard();
+            refreshHistoryList();
+        } else if (o->status == "pending") {
+            QMessageBox::warning(this, "Peringatan", "Order masih 'pending', proses order terlebih dahulu!");
+        } else if (o->status == "served") {
+            QMessageBox::information(this, "Info", "Order sudah dalam status 'served' (disajikan)!");
+        } else if (o->status == "paid") {
+            QMessageBox::information(this, "Info", "Order sudah lunas ('paid')!");
+        }
+    }
+}
 
 // ============================================================
 //  SLOT: MEJA
@@ -1018,31 +1486,42 @@ void MainWindow::onRunBFS()
 {
     Table* curr = tableList->getCurrent();
     if (!curr) return;
-    auto result = tableGraph->bfs(curr->tableNumber);
-    QString output = "=== BFS dari Meja " + QString::number(curr->tableNumber) + " ===\n";
-    output += "Urutan kunjungan: ";
-    for (int i = 0; i < (int)result.size(); i++) {
-        output += "Meja " + QString::number(result[i]);
-        if (i < (int)result.size()-1) output += " → ";
-    }
-    updateGraphDisplay();
-    ui->graphDisplay->setText(output + "\n\n📋 Adjacency List:\n" + ui->graphDisplay->toPlainText());
-    addLog(QString("🔍 BFS dari Meja %1 selesai.").arg(curr->tableNumber));
+    
+    // Ambil hasil BFS
+    graphTraversalSequence = tableGraph->bfs(curr->tableNumber);
+    graphAnimationStep = 0;
+    
+    // Mulai animasi
+    drawGraph(0);
+    animationTimer->start(500); // 500 ms per step
+
+    addLog(QString("🔵 Memulai visualisasi BFS dari Meja %1...").arg(curr->tableNumber));
 }
 
 void MainWindow::onRunDFS()
 {
     Table* curr = tableList->getCurrent();
     if (!curr) return;
-    auto result = tableGraph->dfs(curr->tableNumber);
-    QString output = "=== DFS dari Meja " + QString::number(curr->tableNumber) + " ===\n";
-    output += "Urutan kunjungan: ";
-    for (int i = 0; i < (int)result.size(); i++) {
-        output += "Meja " + QString::number(result[i]);
-        if (i < (int)result.size()-1) output += " → ";
-    }
-    ui->graphDisplay->setText(output);
-    addLog(QString("🔍 DFS dari Meja %1 selesai.").arg(curr->tableNumber));
+
+    // Ambil hasil DFS
+    graphTraversalSequence = tableGraph->dfs(curr->tableNumber);
+    graphAnimationStep = 0;
+    
+    // Mulai animasi
+    drawGraph(0);
+    animationTimer->start(500); // 500 ms per step
+
+    addLog(QString("🔵 Memulai visualisasi DFS dari Meja %1...").arg(curr->tableNumber));
+}
+
+void MainWindow::onZoomIn()
+{
+    ui->graphDisplay->scale(1.2, 1.2);
+}
+
+void MainWindow::onZoomOut()
+{
+    ui->graphDisplay->scale(1.0 / 1.2, 1.0 / 1.2);
 }
 
 // ============================================================
@@ -1649,6 +2128,13 @@ void MainWindow::onProsesPembayaran()
         orderId, o->tableNumber, subtotal, diskon,
         bayar, metode.toStdString(), getCurrentTimestamp());
 
+    // --- REKOMENDASI MENU ---
+    std::vector<std::string> purchasedItems;
+    for (const auto& item : o->items) {
+        purchasedItems.push_back(item.menuItemName);
+    }
+    menuRecGraph->addTransaction(purchasedItems);
+
     // Update status order
     o->status = "paid";
     tableList->freeTable(o->tableNumber);
@@ -1844,4 +2330,35 @@ void MainWindow::setupCreditTab()
     ui->creditScrollArea->setStyleSheet(
         "QScrollArea{background:transparent;border:none;}"
         "QWidget#creditScrollContent{background:transparent;}");
+}
+
+// ============================================================
+//  SLOT: REKOMENDASI MENU
+// ============================================================
+void MainWindow::onShowRecommendations()
+{
+    auto cmb = this->findChild<QComboBox*>("cmbMenuRekomendasi");
+    auto listRec = this->findChild<QListWidget*>("listMenuRekomendasi");
+    if (!cmb || !listRec) return;
+
+    QString selectedMenu = cmb->currentText();
+    if (selectedMenu.isEmpty()) return;
+
+    listRec->clear();
+    auto recs = menuRecGraph->getRecommendations(selectedMenu.toStdString());
+
+    if (recs.empty()) {
+        listRec->addItem("Belum ada data rekomendasi yang cukup (Belum pernah dibeli bersamaan dengan menu lain).");
+        return;
+    }
+
+    listRec->addItem(QString("Rekomendasi Teratas untuk \"%1\":").arg(selectedMenu));
+    int count = 0;
+    for (const auto& pair : recs) {
+        if (count >= 5) break; // Ambil 5 teratas
+        listRec->addItem(QString("- %1 (Dibeli bersamaan %2 kali)")
+            .arg(QString::fromStdString(pair.first))
+            .arg(pair.second));
+        count++;
+    }
 }

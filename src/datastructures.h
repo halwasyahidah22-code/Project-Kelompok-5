@@ -316,6 +316,25 @@ private:
     Staff* onDuty;
     int size;
 
+    void updateOnDutyStatus() {
+        if (!head) return;
+        // Reset all to false
+        Staff* curr = head;
+        do {
+            curr->onDuty = false;
+            curr = curr->next;
+        } while (curr != head);
+
+        // Set up to 4 people on duty starting from `onDuty`
+        if (onDuty) {
+            Staff* temp = onDuty;
+            for (int i = 0; i < 4 && i < size; i++) {
+                temp->onDuty = true;
+                temp = temp->next;
+            }
+        }
+    }
+
 public:
     StaffCircularList() : head(nullptr), tail(nullptr), onDuty(nullptr), size(0) {}
 
@@ -341,6 +360,7 @@ public:
             tail->next = head;
         }
         size++;
+        updateOnDutyStatus();
     }
 
     bool remove(int staffId) {
@@ -360,16 +380,16 @@ public:
         Staff* curr = head;
         do {
             if (curr->staffId == staffId) {
-                // Jika yang dihapus sedang bertugas, geser onDuty ke berikutnya
+                // Jika yang dihapus sedang bertugas utama, geser onDuty ke berikutnya
                 if (onDuty == curr) {
                     onDuty = curr->next;
-                    if (onDuty) onDuty->onDuty = true;
                 }
                 if (curr == head) head = curr->next;
                 if (curr == tail) tail = prev;
                 prev->next = curr->next;
                 delete curr;
                 size--;
+                updateOnDutyStatus();
                 return true;
             }
             prev = curr;
@@ -381,9 +401,12 @@ public:
 
     Staff* rotateShift() {
         if (!onDuty) return nullptr;
-        onDuty->onDuty = false;
-        onDuty = onDuty->next;
-        onDuty->onDuty = true;
+        // Geser sebanyak 4 orang jika memungkinkan, agar shift benar-benar berganti tim
+        int shiftCount = (size >= 4) ? 4 : 1;
+        for (int i = 0; i < shiftCount; i++) {
+            onDuty = onDuty->next;
+        }
+        updateOnDutyStatus();
         return onDuty;
     }
 
@@ -665,6 +688,40 @@ public:
 // ============================================================
 //  6. GRAPH (BFS & DFS) — Relasi / Layout Meja Restoran
 // ============================================================
+// ============================================================
+//  GRAPH UNTUK REKOMENDASI MENU (Data Structure)
+// ============================================================
+class RecommendationGraph {
+private:
+    std::unordered_map<std::string, std::unordered_map<std::string, int>> adjList;
+
+public:
+    void addTransaction(const std::vector<std::string>& items) {
+        for (size_t i = 0; i < items.size(); ++i) {
+            for (size_t j = i + 1; j < items.size(); ++j) {
+                if (items[i] != items[j]) {
+                    adjList[items[i]][items[j]]++;
+                    adjList[items[j]][items[i]]++;
+                }
+            }
+        }
+    }
+
+    std::vector<std::pair<std::string, int>> getRecommendations(const std::string& item) {
+        std::vector<std::pair<std::string, int>> recs;
+        if (adjList.find(item) == adjList.end()) return recs;
+
+        for (const auto& pair : adjList[item]) {
+            recs.push_back({pair.first, pair.second});
+        }
+        // Sort descending by frequency
+        std::sort(recs.begin(), recs.end(), [](const auto& a, const auto& b) {
+            return a.second > b.second;
+        });
+        return recs;
+    }
+};
+
 class TableGraph {
 private:
     std::unordered_map<int, std::vector<int>> adjList;

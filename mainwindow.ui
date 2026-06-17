@@ -865,8 +865,8 @@
                <item>
                 <widget class="QTextEdit" name="pembRingkasanDisplay">
                  <property name="readOnly"><bool>true</bool></property>
-                 <property name="minimumHeight"><number>100</number></property>
-                 <property name="maximumHeight"><number>130</number></property>
+                 <property name="minimumHeight"><number>60</number></property>
+                 <property name="maximumHeight"><number>80</number></property>
                  <property name="placeholderText"><string>Muat order terlebih dahulu...</string></property>
                 </widget>
                </item>
@@ -1110,16 +1110,40 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="lblGraphOutput">
-             <property name="text">
-              <string>Output Graph:</string>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="graphControlLayout">
+             <item>
+              <widget class="QLabel" name="lblGraphOutput">
+               <property name="text"><string>Output Graph:</string></property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="graphCtrlSpacer">
+               <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+               <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnZoomIn">
+               <property name="text"><string>🔍 Zoom In</string></property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnZoomOut">
+               <property name="text"><string>🔍 Zoom Out</string></property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
-            <widget class="QTextEdit" name="graphDisplay">
-             <property name="readOnly">
-              <bool>true</bool>
+            <widget class="QGraphicsView" name="graphDisplay">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>1</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumHeight">
+              <number>300</number>
              </property>
             </widget>
            </item>
@@ -1297,11 +1321,36 @@
         <item>
          <layout class="QVBoxLayout" name="staffRightLayout">
           <item>
-           <widget class="QLabel" name="lblStaffTableTitle">
-            <property name="text">
-             <string>👤 Daftar Staf (Circular Linked List - Rotasi Shift)</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="staffFilterLayout">
+            <item>
+             <widget class="QLabel" name="lblStaffTableTitle">
+              <property name="text">
+               <string>👤 Daftar Staf (Circular Linked List - Rotasi Shift)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="staffFilterSpacer">
+              <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+              <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="lblFilterStaff">
+              <property name="text"><string>Filter:</string></property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="filterStaffRole">
+              <item><property name="text"><string>Semua Jabatan</string></property></item>
+              <item><property name="text"><string>Waiter</string></property></item>
+              <item><property name="text"><string>Kasir</string></property></item>
+              <item><property name="text"><string>Koki</string></property></item>
+              <item><property name="text"><string>Manager</string></property></item>
+              <item><property name="text"><string>Cleaning</string></property></item>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="QTableWidget" name="staffTable">
