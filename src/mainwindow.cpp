@@ -31,6 +31,9 @@ MainWindow::MainWindow(QWidget* parent)
     // Setup UI dari file .ui (ganti semua setupXxxTab())
     ui->setupUi(this);
 
+    ui->tabWidget->tabBar()->setExpanding(false);
+    ui->tabWidget->tabBar()->setStyleSheet("QTabBar { alignment: center; }");
+
     // Sambungkan semua signal ke slot
     setupConnections();
 
@@ -131,6 +134,9 @@ void MainWindow::setupConnections()
     // ── Laporan Keuangan ─────────────────────────────────────
     connect(ui->btnGenerateLapKeu, &QPushButton::clicked, this, &MainWindow::onGenerateLapKeu);
     connect(ui->btnSimpanLapKeu,   &QPushButton::clicked, this, &MainWindow::onSimpanLapKeu);
+
+    // Tab bar Center
+    ui->tabWidget->tabBar()->setExpanding(false);
 
     // ── Tabel Header ─────────────────────────────────────────
     ui->menuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -283,6 +289,11 @@ void MainWindow::applyStyleSheet()
             border-radius: 0 6px 6px 6px;
             background-color: #F5F5F5;
         }
+        
+        QTabWidget::tab-bar {
+            alignment: center;
+        }
+
         QTabBar::tab {
             background-color: #E0E0E0; color: #424242;
             padding: 8px 18px; border-radius: 4px 4px 0 0;
@@ -337,6 +348,36 @@ void MainWindow::applyStyleSheet()
         QGroupBox::title {
             subcontrol-origin: margin; padding: 0 6px; color: #1976D2;
         }
+        
+        QLabel#lblDashboardTitle { margin-top: 20px; }
+        
+        QLabel#lblCurrentTime {
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        
+        QGroupBox#cardTotalMenu,
+        QGroupBox#cardTotalOrders,
+        QGroupBox#cardPendingOrders {
+            margin-bottom: 8px;
+        }
+        
+        QLabel#lblTotalMenu,
+        QLabel#lblTotalOrders,
+        QLabel#lblPendingOrders,
+        QLabel#lblActiveTables,
+        QLabel#lblAvailableMenus {
+            padding-top: 0px;
+            margin-top: 0px;
+            qproperty-alignment: AlignCenter;
+        }
+        
+        QLabel#lblMenuByCategory {
+            margin-top: 18px;
+            margin-bottom: 20px;
+        }
+        
+        QLabel { background-color: transparent; color: #212121; }
 
         QLineEdit, QTextEdit, QPlainTextEdit {
             background-color: #FFFFFF; color: #212121;
@@ -412,8 +453,6 @@ void MainWindow::applyStyleSheet()
         }
         QScrollBar::handle:horizontal:hover { background-color: #9E9E9E; }
         QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0px; }
-
-        QLabel { background-color: transparent; color: #212121; }
 
         QToolTip {
             background-color: #FFFDE7; color: #212121;

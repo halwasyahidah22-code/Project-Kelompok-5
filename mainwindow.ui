@@ -53,10 +53,22 @@
         </item>
         <item>
          <layout class="QHBoxLayout" name="cardRow1">
+            <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignHCenter</set>
+            </property>
           <item>
            <widget class="QGroupBox" name="cardTotalMenu">
             <property name="title">
              <string>Total Menu</string>
+            </property>
+            <property name="minimumWidth">
+                <number>340</number>
+            </property>
+            <property name="minimumHeight">
+                <number>80</number>
+            </property>
+            <property name="maximumWidth">
+                <number>340</number>
             </property>
             <layout class="QVBoxLayout">
              <item>
@@ -83,6 +95,15 @@
             <property name="title">
              <string>Total Order</string>
             </property>
+            <property name="minimumWidth">
+                <number>340</number>
+            </property>
+            <property name="minimumHeight">
+                <number>80</number>
+            </property>
+            <property name="maximumWidth">
+                <number>340</number>
+            </property>
             <layout class="QVBoxLayout">
              <item>
               <widget class="QLabel" name="lblTotalOrders">
@@ -108,9 +129,59 @@
             <property name="title">
              <string>Order Pending</string>
             </property>
+            <property name="minimumWidth">
+                <number>340</number>
+            </property>
+            <property name="minimumHeight">
+                <number>80</number>
+            </property>
+            <property name="maximumWidth">
+                <number>340</number>
+            </property>
             <layout class="QVBoxLayout">
              <item>
               <widget class="QLabel" name="lblPendingOrders">
+               <property name="font">
+                <font>
+                 <pointsize>28</pointsize>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>0</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="cardRow2">
+            <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignHCenter</set>
+            </property>
+          <item>
+           <widget class="QGroupBox" name="cardAvailableMenus">
+            <property name="title">
+             <string>Menu Tersedia</string>
+            </property>
+            <property name="minimumWidth">
+                <number>340</number>
+            </property>
+            <property name="minimumHeight">
+                <number>80</number>
+            </property>
+            <property name="maximumWidth">
+                <number>340</number>
+            </property>
+            <layout class="QVBoxLayout">
+             <item>
+              <widget class="QLabel" name="lblAvailableMenus">
                <property name="font">
                 <font>
                  <pointsize>28</pointsize>
@@ -132,6 +203,15 @@
            <widget class="QGroupBox" name="cardActiveTables">
             <property name="title">
              <string>Meja Terpakai</string>
+            </property>
+            <property name="minimumWidth">
+                <number>340</number>
+            </property>
+            <property name="minimumHeight">
+                <number>80</number>
+            </property>
+            <property name="maximumWidth">
+                <number>340</number>
             </property>
             <layout class="QVBoxLayout">
              <item>
@@ -156,33 +236,6 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="cardRow2">
-          <item>
-           <widget class="QGroupBox" name="cardAvailableMenus">
-            <property name="title">
-             <string>Menu Tersedia</string>
-            </property>
-            <layout class="QVBoxLayout">
-             <item>
-              <widget class="QLabel" name="lblAvailableMenus">
-               <property name="font">
-                <font>
-                 <pointsize>28</pointsize>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>0</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignmentFlag::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
            <widget class="QLabel" name="lblMenuByCategory">
             <property name="text">
              <string>Makanan: 0 | Minuman: 0 | Snack: 0</string>
@@ -192,35 +245,43 @@
             </property>
            </widget>
           </item>
-         </layout>
+        <item>
+            <layout class="QHBoxLayout" name="logStatsRow">
+                <item>
+                    <layout class="QVBoxLayout" name="logLayout">
+                        <item>
+                            <widget class="QLabel" name="lblLogTitle">
+                                <property name="text">
+                                    <string>📝 Log Aktivitas:</string>
+                                </property>
+                            </widget>
+                        </item>
+                <item>
+            <widget class="QTextEdit" name="logDisplay">
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+            </widget>
+            </item>
+        </layout>
         </item>
         <item>
-         <widget class="QLabel" name="lblLogTitle">
-          <property name="text">
-           <string>📝 Log Aktivitas:</string>
-          </property>
-         </widget>
+        <layout class="QVBoxLayout" name="statsLayout">
+            <item>
+            <widget class="QLabel" name="lblStatsTitle">
+            <property name="text">
+                <string>📊 Statistik STL (std::count + std::find):</string>
+            </property>
+            </widget>
+            </item>
+            <item>
+            <widget class="QTextEdit" name="statsDisplay">
+            <property name="readOnly"><bool>true</bool></property>
+            </widget>
+            </item>
+        </layout>
         </item>
-        <item>
-         <widget class="QTextEdit" name="logDisplay">
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="lblStatsTitle">
-          <property name="text">
-           <string>📊 Statistik STL (std::count + std::find):</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QTextEdit" name="statsDisplay">
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
+        </layout>
         </item>
         <item>
          <widget class="QPushButton" name="btnRefreshDashboard">
@@ -266,6 +327,9 @@
               <property name="title">
                <string>Tambah / Edit Menu</string>
               </property>
+              <property name="maximumWidth">
+                <number>200</number>
+            </property>
               <layout class="QVBoxLayout" name="menuFormLayout">
                <item>
                 <widget class="QLabel" name="lblMenuName">
