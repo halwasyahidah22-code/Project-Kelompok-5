@@ -303,6 +303,9 @@ void MainWindow::setupConnections()
     connect(ui->btnGenerateLapKeu, &QPushButton::clicked, this, &MainWindow::onGenerateLapKeu);
     connect(ui->btnSimpanLapKeu,   &QPushButton::clicked, this, &MainWindow::onSimpanLapKeu);
 
+    // Tab bar Center
+    ui->tabWidget->tabBar()->setExpanding(false);
+
     // ── Tabel Header ─────────────────────────────────────────
     ui->menuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->orderTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -586,6 +589,36 @@ void MainWindow::applyStyleSheet()
         QPushButton#btnRotateShift:hover, QPushButton#btnRunBFS:hover, QPushButton#btnRunDFS:hover { 
             background-color: #fd83b9; 
         }
+        
+        QLabel#lblDashboardTitle { margin-top: 20px; }
+        
+        QLabel#lblCurrentTime {
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        
+        QGroupBox#cardTotalMenu,
+        QGroupBox#cardTotalOrders,
+        QGroupBox#cardPendingOrders {
+            margin-bottom: 8px;
+        }
+        
+        QLabel#lblTotalMenu,
+        QLabel#lblTotalOrders,
+        QLabel#lblPendingOrders,
+        QLabel#lblActiveTables,
+        QLabel#lblAvailableMenus {
+            padding-top: 0px;
+            margin-top: 0px;
+            qproperty-alignment: AlignCenter;
+        }
+        
+        QLabel#lblMenuByCategory {
+            margin-top: 18px;
+            margin-bottom: 20px;
+        }
+        
+        QLabel { background-color: transparent; color: #212121; }
 
         /* Error/Destructive Buttons */
         QPushButton#btnRemoveMenuItem, QPushButton#btnRemoveStaff,
