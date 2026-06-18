@@ -51,8 +51,8 @@ private:
 
     // ---- Staff Carousel State ----
     QStringList roleList;
-    int currentRoleIndex;
-    QLabel* lblCurrentRole;
+    int currentRoleIndex = 0;
+    QLabel* lblCurrentRole = nullptr;
 
     // ---- Graph Visualization ----
     QGraphicsScene* graphScene;

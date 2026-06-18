@@ -61,7 +61,7 @@ MainWindow::MainWindow(QWidget* parent)
     sidebarLayout->setContentsMargins(24, 40, 24, 40);
     sidebarLayout->setSpacing(10);
 
-    QLabel* logo = new QLabel("HALWA CANTIK\nADMIN TERMINAL", sidebar);
+    QLabel* logo = new QLabel("SISTEM MANAJEMEN\nRESTORAN", sidebar);
     logo->setObjectName("sidebarLogo");
     sidebarLayout->addWidget(logo);
     sidebarLayout->addSpacing(40);
@@ -953,6 +953,33 @@ void MainWindow::refreshTableDisplay()
 void MainWindow::refreshStaffTable()
 {
     auto allStaffs = staffList->getAll();
+    
+    // Perbarui daftar jabatan di Carousel secara dinamis, tapi pertahankan jabatan standar
+    QStringList newRoleList;
+    newRoleList << "Semua Jabatan" << "Koki" << "Kasir" << "Waiter" << "Manager" << "Cleaning";
+    
+    for (Staff* s : allStaffs) {
+        QString roleTitle = QString::fromStdString(s->role);
+        if (!newRoleList.contains(roleTitle, Qt::CaseInsensitive)) {
+            newRoleList << roleTitle;
+        }
+    }
+    
+    QString currentRole = roleList.isEmpty() ? "Semua Jabatan" : roleList[currentRoleIndex];
+    roleList = newRoleList;
+    
+    int newIndex = -1;
+    for (int i = 0; i < roleList.size(); ++i) {
+        if (roleList[i].compare(currentRole, Qt::CaseInsensitive) == 0) {
+            newIndex = i; break;
+        }
+    }
+    currentRoleIndex = (newIndex != -1) ? newIndex : 0;
+    
+    if (lblCurrentRole && !roleList.isEmpty()) {
+        lblCurrentRole->setText("JABATAN: " + roleList[currentRoleIndex].toUpper());
+    }
+
     QString filterRole = roleList.isEmpty() ? "Semua Jabatan" : roleList[currentRoleIndex];
     
     std::vector<Staff*> filteredStaffs;
