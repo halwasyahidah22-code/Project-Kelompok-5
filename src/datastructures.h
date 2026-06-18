@@ -318,16 +318,16 @@ private:
 
     void updateOnDutyStatus() {
         if (!head) return;
-        // Reset all to false
+        // Hanya cek apakah ada yang onDuty. Jika tidak ada sama sekali, buat aktif beberapa orang
+        bool hasActive = false;
         Staff* curr = head;
         do {
-            curr->onDuty = false;
+            if (curr->onDuty) hasActive = true;
             curr = curr->next;
         } while (curr != head);
 
-        // Set up to 4 people on duty starting from `onDuty`
-        if (onDuty) {
-            Staff* temp = onDuty;
+        if (!hasActive) {
+            Staff* temp = head;
             for (int i = 0; i < 4 && i < size; i++) {
                 temp->onDuty = true;
                 temp = temp->next;
@@ -336,7 +336,7 @@ private:
     }
 
 public:
-    StaffCircularList() : head(nullptr), tail(nullptr), onDuty(nullptr), size(0) {}
+    StaffCircularList() : head(nullptr), tail(nullptr), size(0) {}
 
     ~StaffCircularList() {
         if (!head) return;
@@ -353,7 +353,7 @@ public:
         if (!head) {
             head = tail = node;
             node->next = head;
-            onDuty = head;
+            node->onDuty = true; // Langsung aktif jika pertama
         } else {
             tail->next = node;
             tail = node;
@@ -366,24 +366,17 @@ public:
     bool remove(int staffId) {
         if (!head) return false;
 
-        // Kasus: hanya 1 node
         if (head == tail && head->staffId == staffId) {
-            if (onDuty == head) onDuty = nullptr;
             delete head;
             head = tail = nullptr;
             size--;
             return true;
         }
 
-        // Cari node dengan traversal circular
         Staff* prev = tail;
         Staff* curr = head;
         do {
             if (curr->staffId == staffId) {
-                // Jika yang dihapus sedang bertugas utama, geser onDuty ke berikutnya
-                if (onDuty == curr) {
-                    onDuty = curr->next;
-                }
                 if (curr == head) head = curr->next;
                 if (curr == tail) tail = prev;
                 prev->next = curr->next;
@@ -399,15 +392,95 @@ public:
         return false;
     }
 
-    Staff* rotateShift() {
-        if (!onDuty) return nullptr;
-        // Geser sebanyak 4 orang jika memungkinkan, agar shift benar-benar berganti tim
-        int shiftCount = (size >= 4) ? 4 : 1;
-        for (int i = 0; i < shiftCount; i++) {
-            onDuty = onDuty->next;
+    Staff* rotateShiftByRole(const std::string& roleToRotate, int maxOnDuty = 2) {
+        if (!head) return nullptr;
+
+        // KASUS 1: Semua Jabatan
+        if (roleToRotate == "Semua Jabatan" || roleToRotate == "Semua") {
+            Staff* curr = head;
+            Staff* firstActive = nullptr;
+            do {
+                if (curr->onDuty) {
+                    firstActive = curr;
+                    break;
+                }
+                curr = curr->next;
+            } while (curr != head);
+
+            curr = head;
+            do {
+                curr->onDuty = false;
+                curr = curr->next;
+            } while (curr != head);
+
+            if (firstActive) {
+                int shiftCount = (size >= 4) ? 4 : 1;
+                for (int i = 0; i < shiftCount; i++) firstActive = firstActive->next;
+            } else {
+                firstActive = head;
+            }
+
+            Staff* temp = firstActive;
+            for (int i = 0; i < 4 && i < size; i++) {
+                temp->onDuty = true;
+                temp = temp->next;
+            }
+            return firstActive;
         }
-        updateOnDutyStatus();
-        return onDuty;
+
+        // KASUS 2: Spesifik Jabatan
+        Staff* curr = head;
+        Staff* firstActiveRole = nullptr;
+        int roleCount = 0;
+
+        do {
+            if (curr->role == roleToRotate) {
+                roleCount++;
+                if (curr->onDuty && !firstActiveRole) {
+                    firstActiveRole = curr;
+                }
+            }
+            curr = curr->next;
+        } while (curr != head);
+
+        if (!firstActiveRole) {
+            curr = head;
+            do {
+                if (curr->role == roleToRotate) {
+                    firstActiveRole = curr;
+                    break;
+                }
+                curr = curr->next;
+            } while (curr != head);
+        }
+
+        if (!firstActiveRole) return nullptr;
+
+        curr = head;
+        do {
+            if (curr->role == roleToRotate) curr->onDuty = false;
+            curr = curr->next;
+        } while (curr != head);
+
+        Staff* nextActive = firstActiveRole;
+        int shiftCount = (roleCount > maxOnDuty) ? maxOnDuty : 1;
+        for (int i = 0; i < shiftCount; i++) {
+            do {
+                nextActive = nextActive->next;
+            } while (nextActive->role != roleToRotate);
+        }
+
+        Staff* temp = nextActive;
+        int activated = 0;
+        do {
+            if (temp->role == roleToRotate) {
+                temp->onDuty = true;
+                activated++;
+            }
+            temp = temp->next;
+        } while (temp != nextActive && activated < maxOnDuty && activated < roleCount);
+
+        return nextActive;
     }
 
     std::vector<Staff*> getAll() const {
@@ -421,7 +494,6 @@ public:
         return result;
     }
 
-    Staff* getOnDuty() const { return onDuty; }
     int getSize() const { return size; }
 };
 

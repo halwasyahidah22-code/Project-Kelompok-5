@@ -49,6 +49,11 @@ private:
     int nextMenuId;
     int nextStaffId;
 
+    // ---- Staff Carousel State ----
+    QStringList roleList;
+    int currentRoleIndex;
+    QLabel* lblCurrentRole;
+
     // ---- Graph Visualization ----
     QGraphicsScene* graphScene;
     QTimer*         animationTimer;
@@ -131,6 +136,8 @@ private slots:
     void onAddStaff();
     void onRemoveStaff();
     void onRotateShift();
+    void onCarouselLeft();
+    void onCarouselRight();
 
     // History & Report
     void onUndoAction();

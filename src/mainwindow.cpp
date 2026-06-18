@@ -158,6 +158,38 @@ MainWindow::MainWindow(QWidget* parent)
     
     refreshMenuTable(); // Populate combobox now that it's created
 
+    // --- STAFF CAROUSEL INJECTION ---
+    if (ui->filterStaffRole) {
+        ui->filterStaffRole->hide();
+        roleList << "Semua Jabatan" << "Koki" << "Kasir" << "Waiter" << "Manajer";
+        currentRoleIndex = 0;
+        
+        QWidget* carouselWidget = new QWidget();
+        QHBoxLayout* carouselLayout = new QHBoxLayout(carouselWidget);
+        carouselLayout->setContentsMargins(0,0,0,0);
+        
+        QPushButton* btnPrevRole = new QPushButton("◄");
+        btnPrevRole->setStyleSheet("font-weight: 900; font-size: 24px; padding: 0px 10px; color: #1e3a8a; border: none; background: transparent;");
+        lblCurrentRole = new QLabel("JABATAN: " + roleList[currentRoleIndex].toUpper());
+        lblCurrentRole->setAlignment(Qt::AlignCenter);
+        lblCurrentRole->setStyleSheet("font-weight: bold; font-size: 14px;");
+        QPushButton* btnNextRole = new QPushButton("►");
+        btnNextRole->setStyleSheet("font-weight: 900; font-size: 24px; padding: 0px 10px; color: #1e3a8a; border: none; background: transparent;");
+        
+        carouselLayout->addWidget(btnPrevRole);
+        carouselLayout->addWidget(lblCurrentRole);
+        carouselLayout->addWidget(btnNextRole);
+        
+        // Cari layout asli dari .ui dan masukkan carousel
+        if (QLayout* layout = ui->filterStaffRole->parentWidget()->findChild<QLayout*>("staffFilterLayout")) {
+            if (auto boxLayout = qobject_cast<QBoxLayout*>(layout)) {
+                boxLayout->insertWidget(boxLayout->indexOf(ui->filterStaffRole), carouselWidget);
+            }
+        }
+        connect(btnPrevRole, &QPushButton::clicked, this, &MainWindow::onCarouselLeft);
+        connect(btnNextRole, &QPushButton::clicked, this, &MainWindow::onCarouselRight);
+    }
+
     // HIDE TABLE GRAPH VISUALIZATION
     if (ui->graphDisplay) ui->graphDisplay->hide();
     if (ui->btnRunBFS) ui->btnRunBFS->hide();
@@ -241,6 +273,9 @@ void MainWindow::setupConnections()
     connect(ui->btnAddStaff,    &QPushButton::clicked, this, &MainWindow::onAddStaff);
     connect(ui->btnRemoveStaff, &QPushButton::clicked, this, &MainWindow::onRemoveStaff);
     connect(ui->btnRotateShift, &QPushButton::clicked, this, &MainWindow::onRotateShift);
+    
+
+    
     connect(ui->filterStaffRole, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &MainWindow::refreshStaffTable);
 
@@ -372,17 +407,6 @@ void MainWindow::setupInitialData()
     refreshTableDisplay();
     refreshStaffTable();
     refreshHistoryList();
-
-    // Staf pertama on-duty
-    if (staffList->getSize() > 0) {
-        Staff* s = staffList->getOnDuty();
-        if (s) {
-            s->onDuty = true;
-            ui->lblOnDuty->setText(QString("Sedang Bertugas: %1 (%2)")
-                                       .arg(QString::fromStdString(s->name))
-                                       .arg(QString::fromStdString(s->role)));
-        }
-    }
 
     addLog("✅ Sistem berhasil diinisialisasi dengan data awal.");
     addLog(QString("📦 %1 item menu dimuat.").arg(menuList->getSize()));
@@ -896,7 +920,7 @@ void MainWindow::refreshTableDisplay()
 void MainWindow::refreshStaffTable()
 {
     auto allStaffs = staffList->getAll();
-    QString filterRole = ui->filterStaffRole->currentText();
+    QString filterRole = roleList.isEmpty() ? "Semua Jabatan" : roleList[currentRoleIndex];
     
     std::vector<Staff*> filteredStaffs;
     QString onDutyText = "Sedang Bertugas: ";
@@ -1567,11 +1591,6 @@ void MainWindow::onRemoveStaff()
     if (staffList->remove(staffId)) {
         actionStack->push(Action("remove_staff", "Hapus staf: " + name.toStdString(), staffId));
         addLog(QString("🗑 Staf dihapus: %1").arg(name));
-        Staff* duty = staffList->getOnDuty();
-        ui->lblOnDuty->setText(duty
-                                   ? QString("Sedang Bertugas: %1 (%2)")
-                                         .arg(QString::fromStdString(duty->name), QString::fromStdString(duty->role))
-                                   : "Sedang Bertugas: -");
         refreshStaffTable();
         refreshHistoryList();
     } else {
@@ -1585,20 +1604,36 @@ void MainWindow::onRotateShift()
         if (staffList->getSize() == 0)
             throw RestaurantException("Tidak ada staf terdaftar!");
 
-        Staff* next = staffList->rotateShift();
+        QString filterRole = roleList.isEmpty() ? "Semua Jabatan" : roleList[currentRoleIndex];
+        Staff* next = staffList->rotateShiftByRole(filterRole.toStdString(), 1);
         if (next) {
-            ui->lblOnDuty->setText(
-                QString("Sedang Bertugas: %1 (%2)")
-                    .arg(QString::fromStdString(next->name), QString::fromStdString(next->role)));
-            addLog(QString("🔄 Shift dirotasi → %1 (%2) bertugas.")
-                       .arg(QString::fromStdString(next->name), QString::fromStdString(next->role)));
-            actionStack->push(Action("rotate_shift", "Rotasi shift ke: " + next->name));
+            addLog(QString("🔄 Shift dirotasi (%1) → %2 bertugas.")
+                       .arg(filterRole, QString::fromStdString(next->name)));
+            actionStack->push(Action("rotate_shift", "Rotasi shift " + filterRole.toStdString()));
+        } else {
+            addLog("Peringatan: Tidak ada staf dengan jabatan " + filterRole + " untuk dirotasi.");
         }
         refreshStaffTable();
         refreshHistoryList();
     } catch (const RestaurantException& e) {
         QMessageBox::warning(this, "Peringatan", QString::fromStdString(e.what()));
     }
+}
+
+void MainWindow::onCarouselLeft() {
+    if (roleList.isEmpty()) return;
+    currentRoleIndex--;
+    if (currentRoleIndex < 0) currentRoleIndex = roleList.size() - 1;
+    lblCurrentRole->setText("JABATAN: " + roleList[currentRoleIndex].toUpper());
+    refreshStaffTable();
+}
+
+void MainWindow::onCarouselRight() {
+    if (roleList.isEmpty()) return;
+    currentRoleIndex++;
+    if (currentRoleIndex >= roleList.size()) currentRoleIndex = 0;
+    lblCurrentRole->setText("JABATAN: " + roleList[currentRoleIndex].toUpper());
+    refreshStaffTable();
 }
 
 // ============================================================
