@@ -13,7 +13,10 @@
 #include <QGraphicsLineItem>
 #include <QGraphicsTextItem>
 #include <cmath>
+#include <unordered_map>
 #include "datastructures.h"
+
+class QSpinBox;
 
 // Forward-declare kelas Ui yang di-generate oleh uic dari mainwindow.ui
 QT_BEGIN_NAMESPACE
@@ -53,6 +56,9 @@ private:
     QStringList roleList;
     int currentRoleIndex = 0;
     QLabel* lblCurrentRole = nullptr;
+    std::unordered_map<std::string, int> roleQuotas;
+    QSpinBox* spinQuota = nullptr;
+    QSpinBox* spinMenuStock = nullptr; // Untuk Stok Menu
 
     // ---- Graph Visualization ----
     QGraphicsScene* graphScene;

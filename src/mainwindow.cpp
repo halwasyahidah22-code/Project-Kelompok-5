@@ -115,6 +115,117 @@ MainWindow::MainWindow(QWidget* parent)
 
     // Sambungkan semua signal ke slot
     setupConnections();
+    
+    // Injeksi UI: Ganti Checkbox Tersedia menjadi Spinbox Stok
+    if (ui->inputMenuAvailable) {
+        ui->inputMenuAvailable->hide();
+        spinMenuStock = new QSpinBox(this);
+        spinMenuStock->setRange(0, 9999);
+        spinMenuStock->setValue(10);
+        
+        QLabel* lblMenuStock = new QLabel("Stok Awal:", this);
+        lblMenuStock->setStyleSheet("color: #1a1c1c; margin-top: 5px;");
+        
+        QHBoxLayout* menuStockLayout = new QHBoxLayout();
+        menuStockLayout->addWidget(lblMenuStock);
+        menuStockLayout->addWidget(spinMenuStock);
+        menuStockLayout->addStretch();
+        
+        QWidget* parentW = ui->inputMenuAvailable->parentWidget();
+        if (parentW && parentW->layout()) {
+            if (QBoxLayout* vbox = qobject_cast<QBoxLayout*>(parentW->layout())) {
+                int idx = vbox->indexOf(ui->inputMenuAvailable);
+                vbox->insertLayout(idx, menuStockLayout);
+            }
+        }
+    }
+    
+    // Perbesar area Struk Pembayaran
+    if (ui->strukDisplay) {
+        ui->strukDisplay->setMaximumHeight(16777215); // Hapus batas 130px
+        ui->strukDisplay->setMinimumHeight(400); 
+    }
+    // Perkecil area Riwayat Transaksi agar Struk mendapat lebih banyak ruang
+    if (ui->transaksiTable) {
+        ui->transaksiTable->setMaximumHeight(200);
+    }
+    // Agar teks Sedang Bertugas tidak mendorong UI ke samping
+    if (ui->lblOnDuty) {
+        ui->lblOnDuty->setWordWrap(true);
+    }
+
+    // Pindahkan Filter & Callback serta kontrol tabel lainnya ke atas Tabel Menu
+    if (ui->menuRightLayout) {
+        // Baris 1: Cari, Urutkan, Simpan, Muat
+        QHBoxLayout* toolLayout = new QHBoxLayout();
+        if (ui->lblSearchMenu) toolLayout->addWidget(ui->lblSearchMenu);
+        if (ui->searchMenuInput) toolLayout->addWidget(ui->searchMenuInput);
+        if (ui->lblSortMenu) toolLayout->addWidget(ui->lblSortMenu);
+        if (ui->sortMenuCombo) toolLayout->addWidget(ui->sortMenuCombo);
+        toolLayout->addStretch();
+
+        // Baris 2: Filter & Callback
+        QHBoxLayout* filterLayout = new QHBoxLayout();
+        filterLayout->addWidget(ui->lblFilterCallback);
+        filterLayout->addWidget(ui->filterCategoryCombo);
+        filterLayout->addWidget(ui->btnFilterCategory);
+        filterLayout->addWidget(ui->btnResetFilter);
+        filterLayout->addStretch();
+        
+        // Sisipkan layout di bawah judul tabel (index 1 & 2)
+        ui->menuRightLayout->insertLayout(1, toolLayout);
+        ui->menuRightLayout->insertLayout(2, filterLayout);
+        
+        // Sembunyikan garis pemisah yang tertinggal di sebelah kiri
+        if (ui->lblMenuSep1) ui->lblMenuSep1->hide();
+        if (ui->lblMenuSep2) ui->lblMenuSep2->hide();
+    }
+
+    // Perbaiki grafik agar tidak terpotong (zoom out awal dan bisa digeser)
+    if (ui->graphDisplay) {
+        ui->graphDisplay->scale(0.7, 0.7);
+        ui->graphDisplay->setDragMode(QGraphicsView::ScrollHandDrag);
+    }
+
+    // Lebarkan panel kiri agar tombol-tombol tidak terpotong teksnya (Kecuali TableCtrlBox)
+    QList<QGroupBox*> leftPanels = {
+        ui->menuFormBox, ui->inventarisFormBox, ui->orderCreateBox,
+        ui->pembayaranFormBox, ui->staffFormBox
+    };
+    for (QGroupBox* panel : leftPanels) {
+        if (panel) {
+            panel->setMinimumWidth(260);
+            panel->setMaximumWidth(320);
+        }
+    }
+
+    // Tambahkan indikator visual untuk order aktif
+    if (ui->orderFormLayout) {
+        QLabel* activeOrderLabel = new QLabel("⚪ Belum ada order aktif");
+        activeOrderLabel->setObjectName("activeOrderLabel");
+        activeOrderLabel->setStyleSheet("background-color: #e2e3e5; color: #383d41; padding: 10px; border-radius: 6px; font-weight: bold; margin-top: 10px; margin-bottom: 5px;");
+        activeOrderLabel->setAlignment(Qt::AlignCenter);
+        
+        int btnIndex = ui->orderFormLayout->indexOf(ui->btnCreateOrder);
+        if (btnIndex != -1) {
+            ui->orderFormLayout->insertWidget(btnIndex + 1, activeOrderLabel);
+        }
+    }
+
+    // Sesuaikan terminologi Inventaris menjadi "Makanan Jadi" alih-alih "Bahan Baku"
+    if (ui->inventarisFormBox) ui->inventarisFormBox->setTitle("Kelola Stok Makanan");
+    if (ui->lblInvNama) ui->lblInvNama->setText("Nama Makanan:");
+    if (ui->inputInvNama) ui->inputInvNama->setPlaceholderText("Contoh: Nasi Goreng");
+    if (ui->inputInvKategori) {
+        ui->inputInvKategori->clear();
+        ui->inputInvKategori->addItems({"Makanan Utama", "Minuman", "Snack", "Dessert"});
+    }
+    if (ui->inputInvSatuan) {
+        ui->inputInvSatuan->clear();
+        ui->inputInvSatuan->addItems({"porsi", "gelas", "mangkuk", "potong", "pcs"});
+    }
+    if (ui->lblInvHargaBeli) ui->lblInvHargaBeli->setText("Harga Modal (Rp):");
+    if (ui->btnTambahStok) ui->btnTambahStok->setText("📦 Tambah Stok Makanan");
 
     // Isi data awal
     setupInitialData();
@@ -190,19 +301,40 @@ MainWindow::MainWindow(QWidget* parent)
         connect(btnNextRole, &QPushButton::clicked, this, &MainWindow::onCarouselRight);
     }
 
-    // HIDE TABLE GRAPH VISUALIZATION
-    if (ui->graphDisplay) ui->graphDisplay->hide();
-    if (ui->btnRunBFS) ui->btnRunBFS->hide();
-    if (ui->btnRunDFS) ui->btnRunDFS->hide();
-    if (auto w = this->findChild<QPushButton*>("btnZoomIn")) w->hide();
-    if (auto w = this->findChild<QPushButton*>("btnZoomOut")) w->hide();
-    
-    QList<QLabel*> allLabels = this->findChildren<QLabel*>();
-    for (QLabel* l : allLabels) {
-        if (l->text().contains("Graph BFS / DFS") || l->text().contains("Output Graph")) {
-            l->hide();
+    // Pindahkan tombol Simpan/Muat File ke layout horizontal di panel kiri (tepat di bawah Hapus Menu)
+    if (ui->btnSaveMenu && ui->btnLoadMenu && ui->btnRemoveMenuItem) {
+        QWidget* parentW = ui->btnSaveMenu->parentWidget();
+        if (parentW && parentW->layout()) {
+            if (QVBoxLayout* vbox = qobject_cast<QVBoxLayout*>(parentW->layout())) {
+                vbox->removeWidget(ui->btnSaveMenu);
+                vbox->removeWidget(ui->btnLoadMenu);
+                QHBoxLayout* hbox = new QHBoxLayout();
+                hbox->addWidget(ui->btnSaveMenu);
+                hbox->addWidget(ui->btnLoadMenu);
+                
+                int index = vbox->indexOf(ui->btnRemoveMenuItem);
+                if (index != -1) {
+                    vbox->insertLayout(index + 1, hbox);
+                } else {
+                    vbox->addLayout(hbox);
+                }
+            }
         }
     }
+
+    // HIDE TABLE GRAPH VISUALIZATION (DIBATALKAN KARENA DIBUTUHKAN UNTUK DEMO BFS/DFS)
+    // if (ui->graphDisplay) ui->graphDisplay->hide();
+    // if (ui->btnRunBFS) ui->btnRunBFS->hide();
+    // if (ui->btnRunDFS) ui->btnRunDFS->hide();
+    // if (auto w = this->findChild<QPushButton*>("btnZoomIn")) w->hide();
+    // if (auto w = this->findChild<QPushButton*>("btnZoomOut")) w->hide();
+    
+    // QList<QLabel*> allLabels = this->findChildren<QLabel*>();
+    // for (QLabel* l : allLabels) {
+    //     if (l->text().contains("Graph BFS / DFS") || l->text().contains("Output Graph")) {
+    //         l->hide();
+    //     }
+    // }
 }
 
 MainWindow::~MainWindow()
@@ -274,6 +406,42 @@ void MainWindow::setupConnections()
     connect(ui->btnRemoveStaff, &QPushButton::clicked, this, &MainWindow::onRemoveStaff);
     connect(ui->btnRotateShift, &QPushButton::clicked, this, &MainWindow::onRotateShift);
     
+    // Injeksi UI untuk Kuota Staf
+    spinQuota = new QSpinBox(this);
+    spinQuota->setRange(1, 10);
+    spinQuota->setValue(1);
+    spinQuota->setEnabled(true);
+    
+    QLabel* lblQuota = new QLabel("Kuota Bertugas (Per Shift):", this);
+    lblQuota->setStyleSheet("font-weight: bold; color: #1a1c1c;");
+    
+    QHBoxLayout* quotaLayout = new QHBoxLayout();
+    quotaLayout->addWidget(lblQuota);
+    quotaLayout->addWidget(spinQuota);
+    quotaLayout->addStretch();
+    
+    if (ui->btnRotateShift) {
+        QWidget* parentW = ui->btnRotateShift->parentWidget();
+        if (parentW && parentW->layout()) {
+            if (QBoxLayout* vbox = qobject_cast<QBoxLayout*>(parentW->layout())) {
+                int index = vbox->indexOf(ui->btnRotateShift);
+                vbox->insertLayout(index + 1, quotaLayout);
+            }
+        }
+    }
+
+    connect(spinQuota, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        if (roleList.isEmpty() || currentRoleIndex < 0 || currentRoleIndex >= roleList.size()) return;
+        QString role = roleList[currentRoleIndex];
+        
+        std::string roleStr = role.toStdString();
+        roleQuotas[roleStr] = value;
+        
+        if (staffList->getSize() > 0) {
+            staffList->rotateShiftByRole(roleStr, value);
+            refreshStaffTable();
+        }
+    });
 
     
     connect(ui->filterStaffRole, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -307,26 +475,6 @@ void MainWindow::setupConnections()
     ui->tabWidget->tabBar()->setExpanding(false);
 
     // ── Tabel Header ─────────────────────────────────────────
-    ui->menuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->orderTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->pendingOrdersTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->tableDisplay->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->staffTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->reportTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->inventarisTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->transaksiTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->laporanKeuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    ui->menuTable->horizontalHeader()->setStretchLastSection(true);
-    ui->orderTable->horizontalHeader()->setStretchLastSection(true);
-    ui->pendingOrdersTable->horizontalHeader()->setStretchLastSection(true);
-    ui->tableDisplay->horizontalHeader()->setStretchLastSection(true);
-    ui->staffTable->horizontalHeader()->setStretchLastSection(true);
-    ui->reportTable->horizontalHeader()->setStretchLastSection(true);
-    ui->inventarisTable->horizontalHeader()->setStretchLastSection(true);
-    ui->transaksiTable->horizontalHeader()->setStretchLastSection(true);
-    ui->laporanKeuTable->horizontalHeader()->setStretchLastSection(true);
-
     QList<QTableWidget*> tables = {
         ui->menuTable, ui->orderTable, ui->pendingOrdersTable, 
         ui->tableDisplay, ui->staffTable, ui->reportTable, 
@@ -336,6 +484,11 @@ void MainWindow::setupConnections()
         if(t) {
             t->verticalHeader()->setVisible(false);
             t->verticalHeader()->setDefaultSectionSize(48);
+            t->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+            t->horizontalHeader()->setStretchLastSection(false);
+            
+            // Batasi lebar maksimal tabel agar tidak terlalu memanjang di layar besar
+            t->setMaximumWidth(1000);
         }
     }
 }
@@ -492,7 +645,11 @@ void MainWindow::applyStyleSheet()
             font-size: 14px; 
             min-height: 44px;
         }
-        QPushButton#btnSideNewOrder:hover { background-color: #fd83b9; }
+        QPushButton#btnSideNewOrder:hover { 
+            background-color: #d14f8a; /* Darker Pink for visible hover */
+            color: #ffffff;
+            border: 2px solid #ffffff; /* Add white border on hover */
+        }
         /* ----------------------- */
 
         /* Typography & Headings */
@@ -513,7 +670,7 @@ void MainWindow::applyStyleSheet()
         }
 
         /* Inputs & Controls */
-        QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+        QLineEdit, QTextEdit, QPlainTextEdit, QComboBox {
             background-color: #ffffff; 
             color: #1a1c1c;
             border: 1px solid #e0e0e0; 
@@ -523,10 +680,12 @@ void MainWindow::applyStyleSheet()
             selection-background-color: #dce1ff; 
             selection-color: #00164e;
         }
-        QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus { 
+        QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus { 
             border: 1px solid #021a54; /* Focus transitions to Deep Navy */
         }
         QLineEdit:disabled { background-color: #f5f5f5; color: #454650; }
+        
+        QSpinBox, QDoubleSpinBox { min-height: 30px; font-size: 14px; }
 
         QComboBox::drop-down { border: none; width: 24px; }
         QComboBox QAbstractItemView {
@@ -554,8 +713,11 @@ void MainWindow::applyStyleSheet()
             font-weight: bold; font-size: 13px;
             min-height: 38px; /* Not too big, not too small */
         }
-        QPushButton:hover { background-color: rgba(2, 26, 84, 0.05); }
-        QPushButton:pressed { background-color: rgba(2, 26, 84, 0.1); }
+        QPushButton:hover { 
+            background-color: rgba(2, 26, 84, 0.1); 
+            border: 2px solid #021a54;
+        }
+        QPushButton:pressed { background-color: rgba(2, 26, 84, 0.2); }
         QPushButton:disabled { background-color: #f5f5f5; color: #454650; border: 1px solid #e0e0e0; }
 
         /* Primary Navy Buttons */
@@ -572,6 +734,7 @@ void MainWindow::applyStyleSheet()
         QPushButton#btnTambahStok:hover, QPushButton#btnProsesPembayaran:hover,
         QPushButton#btnGenerateLapKeu:hover, QPushButton#btnZoomIn:hover, QPushButton#btnZoomOut:hover { 
             background-color: #000520; 
+            border: 2px solid #ffffff;
         }
 
         /* Secondary Pink Buttons */
@@ -587,7 +750,8 @@ void MainWindow::applyStyleSheet()
         QPushButton#btnMuatOrder:hover, QPushButton#btnCekStokMinim:hover,
         QPushButton#btnProcessNextOrder:hover, QPushButton#btnUndoAction:hover,
         QPushButton#btnRotateShift:hover, QPushButton#btnRunBFS:hover, QPushButton#btnRunDFS:hover { 
-            background-color: #fd83b9; 
+            background-color: #d14f8a; 
+            border: 2px solid #ffffff;
         }
         
         QLabel#lblDashboardTitle { margin-top: 20px; }
@@ -711,6 +875,55 @@ void MainWindow::applyStyleSheet()
         QMenu { background-color: #ffffff; color: #1a1c1c; border: 1px solid #e8e8e8; border-radius: 8px; padding: 4px; }
         QMenu::item { padding: 8px 24px; border-radius: 4px; }
         QMenu::item:selected { background-color: #dce1ff; color: #00164e; }
+
+        /* --- DASHBOARD STYLING (CLASSIC ELEGANT) --- */
+        QLabel#lblDashboardTitle { font-size: 26px; font-weight: 900; color: #1E293B; margin-top: 10px; }
+        QLabel#lblCurrentTime { font-size: 13px; color: #64748B; font-style: italic; margin-bottom: 15px; }
+
+        QGroupBox#cardTotalMenu, QGroupBox#cardTotalOrders, QGroupBox#cardPendingOrders, 
+        QGroupBox#cardAvailableMenus, QGroupBox#cardActiveTables {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        QGroupBox#cardTotalMenu::title, QGroupBox#cardTotalOrders::title, QGroupBox#cardPendingOrders::title, 
+        QGroupBox#cardAvailableMenus::title, QGroupBox#cardActiveTables::title {
+            subcontrol-origin: margin;
+            subcontrol-position: top center;
+            padding: 4px 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #64748B;
+            background-color: transparent;
+        }
+
+        QLabel#lblTotalMenu, QLabel#lblTotalOrders, QLabel#lblPendingOrders, 
+        QLabel#lblAvailableMenus, QLabel#lblActiveTables {
+            font-size: 40px;
+            font-weight: 900;
+            margin: 5px;
+        }
+
+        /* Number Colors for Elegance */
+        QLabel#lblTotalMenu { color: #1E3A8A; }       /* Classic Navy */
+        QLabel#lblTotalOrders { color: #D97706; }     /* Elegant Gold */
+        QLabel#lblPendingOrders { color: #DC2626; }   /* Crimson Red */
+        QLabel#lblAvailableMenus { color: #0284C7; }  /* Ocean Blue */
+        QLabel#lblActiveTables { color: #059669; }    /* Emerald Green */
+
+        QLabel#lblMenuByCategory {
+            font-size: 15px;
+            color: #334155;
+            font-weight: bold;
+            background-color: #F8FAFC;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #CBD5E1;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
     )");
 }
 
@@ -866,8 +1079,8 @@ void MainWindow::refreshMenuTable()
         ui->menuTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(m->name)));
         ui->menuTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(m->category)));
         ui->menuTable->setItem(i, 3, new QTableWidgetItem(formatPrice(m->price)));
-        auto* avail = new QTableWidgetItem(m->available ? "✅ Ya" : "❌ Tidak");
-        avail->setForeground(m->available ? Qt::darkGreen : Qt::red);
+        auto* avail = new QTableWidgetItem(QString::number(m->stock));
+        avail->setForeground(m->stock > 0 ? Qt::darkGreen : Qt::red);
         ui->menuTable->setItem(i, 4, avail);
     }
 
@@ -1163,7 +1376,7 @@ void MainWindow::onAddMenuItem()
                       name.toStdString(),
                       ui->inputMenuCategory->currentText().toStdString(),
                       price,
-                      ui->inputMenuAvailable->isChecked());
+                      spinMenuStock ? spinMenuStock->value() : 10);
 
         menuList->insert(item);
         menuAVL->insert(item);
@@ -1237,7 +1450,11 @@ void MainWindow::onSearchMenu()
             ui->menuTable->setItem(0, 1, new QTableWidgetItem(QString::fromStdString(found->name)));
             ui->menuTable->setItem(0, 2, new QTableWidgetItem(QString::fromStdString(found->category)));
             ui->menuTable->setItem(0, 3, new QTableWidgetItem(formatPrice(found->price)));
-            ui->menuTable->setItem(0, 4, new QTableWidgetItem(found->available ? "✅ Ya" : "❌ Tidak"));
+            
+            auto* avail = new QTableWidgetItem(QString::number(found->stock));
+            avail->setForeground(found->stock > 0 ? Qt::darkGreen : Qt::red);
+            ui->menuTable->setItem(0, 4, avail);
+            
             addLog(QString("🔍 [Hash O(1)] Ditemukan: %1")
                        .arg(QString::fromStdString(displayItem(*found))));
             return;
@@ -1271,7 +1488,9 @@ void MainWindow::onSearchMenu()
         ui->menuTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(m->name)));
         ui->menuTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(m->category)));
         ui->menuTable->setItem(i, 3, new QTableWidgetItem(formatPrice(m->price)));
-        ui->menuTable->setItem(i, 4, new QTableWidgetItem(m->available ? "✅ Ya" : "❌ Tidak"));
+        auto* avail = new QTableWidgetItem(QString::number(m->stock));
+        avail->setForeground(m->stock > 0 ? Qt::darkGreen : Qt::red);
+        ui->menuTable->setItem(i, 4, avail);
     }
 }
 
@@ -1289,7 +1508,9 @@ void MainWindow::onSortMenu()
         ui->menuTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(items[i].name)));
         ui->menuTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(items[i].category)));
         ui->menuTable->setItem(i, 3, new QTableWidgetItem(formatPrice(items[i].price)));
-        ui->menuTable->setItem(i, 4, new QTableWidgetItem(items[i].available ? "✅ Ya" : "❌ Tidak"));
+        auto* avail = new QTableWidgetItem(QString::number(items[i].stock));
+        avail->setForeground(items[i].stock > 0 ? Qt::darkGreen : Qt::red);
+        ui->menuTable->setItem(i, 4, avail);
     }
     addLog(QString("🔃 Menu diurutkan: %1").arg(ui->sortMenuCombo->currentText()));
 }
@@ -1354,7 +1575,9 @@ void MainWindow::onFilterByCategory()
         ui->menuTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(m->name)));
         ui->menuTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(m->category)));
         ui->menuTable->setItem(i, 3, new QTableWidgetItem(formatPrice(m->price)));
-        ui->menuTable->setItem(i, 4, new QTableWidgetItem(m->available ? "✅ Ya" : "❌ Tidak"));
+        auto* avail = new QTableWidgetItem(QString::number(m->stock));
+        avail->setForeground(m->stock > 0 ? Qt::darkGreen : Qt::red);
+        ui->menuTable->setItem(i, 4, avail);
     }
 
     if (filtered.empty())
@@ -1384,6 +1607,11 @@ void MainWindow::onCreateOrder()
 
     currentOrder = new Order(0, tableNum, priority);
     currentOrderItems.clear();
+
+    if (QLabel* indicator = this->findChild<QLabel*>("activeOrderLabel")) {
+        indicator->setText(QString("🟢 SEDANG MELAYANI: Meja %1").arg(tableNum));
+        indicator->setStyleSheet("background-color: #d4edda; color: #155724; padding: 10px; border-radius: 6px; font-weight: bold; margin-top: 10px; margin-bottom: 5px;");
+    }
     currentOrderTotal = 0.0;
     ui->orderItemList->clear();
     ui->lblOrderTotal->setText("Total: Rp 0");
@@ -1401,6 +1629,13 @@ void MainWindow::onAddItemToOrder()
 
     MenuItem* m = menuHash->findById(menuId);
     if (!m) { QMessageBox::warning(this, "Error", "Menu tidak ditemukan!"); return; }
+
+    if (qty > m->stock) {
+        QMessageBox::warning(this, "Stok Kurang", QString("Stok '%1' tidak cukup! Sisa stok: %2 porsi.").arg(QString::fromStdString(m->name)).arg(m->stock));
+        return;
+    }
+
+    m->stock -= qty; // Kunci stok sementara
 
     OrderItem item;
     item.menuItemId   = m->id;
@@ -1423,6 +1658,14 @@ void MainWindow::onRemoveItemFromOrder()
 {
     int row = ui->orderItemList->currentRow();
     if (row < 0 || !currentOrder) return;
+    int menuId = currentOrderItems[row].menuItemId;
+    int qty = currentOrderItems[row].quantity;
+    
+    MenuItem* m = menuHash->findById(menuId);
+    if (m) {
+        m->stock += qty; // Kembalikan stok
+    }
+    
     currentOrderTotal -= currentOrderItems[row].subtotal;
     currentOrderItems.erase(currentOrderItems.begin() + row);
     delete ui->orderItemList->takeItem(row);
@@ -1464,6 +1707,11 @@ void MainWindow::onSubmitOrder()
     delete currentOrder;
     currentOrder = nullptr;
     currentOrderItems.clear();
+
+    if (QLabel* indicator = this->findChild<QLabel*>("activeOrderLabel")) {
+        indicator->setText("⚪ Belum ada order aktif");
+        indicator->setStyleSheet("background-color: #e2e3e5; color: #383d41; padding: 10px; border-radius: 6px; font-weight: bold; margin-top: 10px; margin-bottom: 5px;");
+    }
     currentOrderTotal = 0.0;
     ui->orderItemList->clear();
     ui->lblOrderTotal->setText("Total: Rp 0");
@@ -1665,7 +1913,12 @@ void MainWindow::onRotateShift()
             throw RestaurantException("Tidak ada staf terdaftar!");
 
         QString filterRole = roleList.isEmpty() ? "Semua Jabatan" : roleList[currentRoleIndex];
-        Staff* next = staffList->rotateShiftByRole(filterRole.toStdString(), 1);
+        int maxOnDuty = 1;
+        std::string roleStr = filterRole.toStdString();
+        if (roleQuotas.count(roleStr)) {
+            maxOnDuty = roleQuotas[roleStr];
+        }
+        Staff* next = staffList->rotateShiftByRole(filterRole.toStdString(), maxOnDuty);
         if (next) {
             addLog(QString("🔄 Shift dirotasi (%1) → %2 bertugas.")
                        .arg(filterRole, QString::fromStdString(next->name)));
@@ -1685,6 +1938,15 @@ void MainWindow::onCarouselLeft() {
     currentRoleIndex--;
     if (currentRoleIndex < 0) currentRoleIndex = roleList.size() - 1;
     lblCurrentRole->setText("JABATAN: " + roleList[currentRoleIndex].toUpper());
+    
+    std::string roleStr = roleList[currentRoleIndex].toStdString();
+    if (spinQuota) {
+        spinQuota->blockSignals(true);
+        spinQuota->setEnabled(true);
+        spinQuota->setValue(roleQuotas.count(roleStr) ? roleQuotas[roleStr] : 1);
+        spinQuota->blockSignals(false);
+    }
+    
     refreshStaffTable();
 }
 
@@ -1693,6 +1955,15 @@ void MainWindow::onCarouselRight() {
     currentRoleIndex++;
     if (currentRoleIndex >= roleList.size()) currentRoleIndex = 0;
     lblCurrentRole->setText("JABATAN: " + roleList[currentRoleIndex].toUpper());
+    
+    std::string roleStr = roleList[currentRoleIndex].toStdString();
+    if (spinQuota) {
+        spinQuota->blockSignals(true);
+        spinQuota->setEnabled(true);
+        spinQuota->setValue(roleQuotas.count(roleStr) ? roleQuotas[roleStr] : 1);
+        spinQuota->blockSignals(false);
+    }
+    
     refreshStaffTable();
 }
 
@@ -1897,36 +2168,44 @@ void MainWindow::refreshStatisticsPanel()
 // ============================================================
 void MainWindow::refreshInventarisTable()
 {
-    auto items = inventarisList->getAll();
+    auto items = menuList->getAll();
     ui->inventarisTable->setRowCount((int)items.size());
     int menipis = 0;
+    
+    // Sembunyikan kolom yang tidak relevan dengan Menu
+    ui->inventarisTable->setColumnHidden(4, true); // Satuan
+    ui->inventarisTable->setColumnHidden(5, true); // MinStok
+    ui->inventarisTable->setColumnHidden(6, true); // HargaBeli
+    ui->inventarisTable->setColumnHidden(7, true); // NilaiStok
+    
     for (int i = 0; i < (int)items.size(); i++) {
-        InventarisItem* inv = items[i];
-        if (inv->menipis()) menipis++;
-        ui->inventarisTable->setItem(i, 0, new QTableWidgetItem(QString::number(inv->id)));
-        ui->inventarisTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(inv->nama)));
-        ui->inventarisTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(inv->kategori)));
-        ui->inventarisTable->setItem(i, 3, new QTableWidgetItem(QString::number(inv->stok)));
-        ui->inventarisTable->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(inv->satuan)));
-        ui->inventarisTable->setItem(i, 5, new QTableWidgetItem(QString::number(inv->minStok)));
-        ui->inventarisTable->setItem(i, 6, new QTableWidgetItem(formatPrice(inv->hargaBeli)));
-        ui->inventarisTable->setItem(i, 7, new QTableWidgetItem(formatPrice(inv->nilaiStok())));
+        MenuItem* m = items[i];
+        bool isMenipis = m->stock <= 3; // Threshold stok menu
+        if (isMenipis) menipis++;
+        
+        ui->inventarisTable->setItem(i, 0, new QTableWidgetItem(QString::number(m->id)));
+        ui->inventarisTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(m->name)));
+        ui->inventarisTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(m->category)));
+        ui->inventarisTable->setItem(i, 3, new QTableWidgetItem(QString::number(m->stock)));
+        ui->inventarisTable->setItem(i, 4, new QTableWidgetItem("Porsi"));
+        ui->inventarisTable->setItem(i, 5, new QTableWidgetItem("3"));
+        ui->inventarisTable->setItem(i, 6, new QTableWidgetItem("-"));
+        ui->inventarisTable->setItem(i, 7, new QTableWidgetItem("-"));
 
-        auto* statusItem = new QTableWidgetItem(inv->menipis() ? "⚠ Menipis" : "✅ Aman");
-        statusItem->setForeground(inv->menipis() ? QColor(211, 47, 47) : QColor(56, 142, 60));
+        auto* statusItem = new QTableWidgetItem(isMenipis ? "⚠️ Menipis" : "✅ Aman");
+        statusItem->setForeground(isMenipis ? QColor(211, 47, 47) : QColor(56, 142, 60));
         ui->inventarisTable->setItem(i, 8, statusItem);
 
-        if (inv->menipis()) {
+        if (isMenipis) {
             for (int col = 0; col < 9; col++) {
                 if (ui->inventarisTable->item(i, col))
                     ui->inventarisTable->item(i, col)->setBackground(QColor(255, 243, 224));
             }
         }
     }
-    ui->lblInvTotalBahan->setText(QString::number(items.size()));
     ui->lblInvStokMenipis->setText(QString("<font color='%1'>%2</font>")
         .arg(menipis > 0 ? "#D32F2F" : "#388E3C").arg(menipis));
-    ui->lblInvNilaiTotal->setText(formatPrice(inventarisList->getTotalNilaiStok()));
+    ui->lblInvNilaiTotal->setText("-");
 }
 
 // ============================================================
@@ -2035,20 +2314,22 @@ void MainWindow::onUpdateStok()
     QString nama = ui->inventarisTable->item(row, 1)->text();
     int delta = ui->inputInvUpdateJumlah->value();
 
-    InventarisItem* item = inventarisList->findById(id);
-    if (!item) { QMessageBox::warning(this, "Error", "Bahan tidak ditemukan!"); return; }
+    MenuItem* item = menuList->find(id);
+    if (!item) { QMessageBox::warning(this, "Error", "Menu tidak ditemukan!"); return; }
 
-    int oldStok = item->stok;
-    inventarisList->updateStok(id, delta);
+    int oldStok = item->stock;
+    item->stock += delta;
+    if (item->stock < 0) item->stock = 0;
 
-    QString logMsg = QString("🔄 Update stok: %1 | %2 → %3 (%4%5)")
-        .arg(nama).arg(oldStok).arg(item->stok)
+    QString logMsg = QString("🔄 Update stok Menu: %1 | %2 ➡️ %3 (%4%5)")
+        .arg(nama).arg(oldStok).arg(item->stock)
         .arg(delta >= 0 ? "+" : "").arg(delta);
     ui->invLogDisplay->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + logMsg);
     addLog(logMsg);
 
-    actionStack->push(Action("update_stok", "Update stok: " + nama.toStdString(), id));
+    actionStack->push(Action("update_stok", "Update stok Menu: " + nama.toStdString(), id));
     refreshInventarisTable();
+    refreshMenuTable();
     refreshHistoryList();
 }
 

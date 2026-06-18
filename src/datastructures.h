@@ -27,13 +27,13 @@ struct MenuItem {
     std::string name;
     std::string category;
     double price;
-    bool available;
+    int stock;
     MenuItem* next;   // untuk Linked List
 
     // Default argument (syarat 6)
     MenuItem(int i = 0, std::string n = "", std::string c = "Umum",
-             double p = 0.0, bool a = true)
-        : id(i), name(n), category(c), price(p), available(a), next(nullptr) {}
+             double p = 0.0, int s = 10)
+        : id(i), name(n), category(c), price(p), stock(s), next(nullptr) {}
 };
 
 struct OrderItem {
@@ -168,7 +168,7 @@ public:
     void insert(const MenuItem& item) {
         MenuItem* node = new MenuItem(item.id, item.name,
                                       item.category, item.price,
-                                      item.available);
+                                      item.stock);
         if (!head) {
             head = node;
         } else {
@@ -997,7 +997,7 @@ inline std::string displayItem(const MenuItem& m) {
     return "[MENU #" + std::to_string(m.id) + "] "
          + m.name + " | " + m.category
          + " | Rp" + std::to_string((int)m.price)
-         + (m.available ? " | TERSEDIA" : " | HABIS");
+         + " | Stok: " + std::to_string(m.stock);
 }
 
 // Overload 2: menampilkan info Order ke string
@@ -1088,7 +1088,7 @@ namespace STLUtils {
     // [STL COUNT] Hitung berapa menu yang tersedia (available == true) menggunakan std::count_if
     inline int countAvailableMenus(const std::vector<MenuItem*>& menus) {
         return (int)std::count_if(menus.begin(), menus.end(),
-            [](MenuItem* m) { return m && m->available; });
+            [](MenuItem* m) { return m && m->stock > 0; });
     }
 
     // [STL COUNT] Hitung meja yang sedang terisi menggunakan std::count_if
@@ -1291,7 +1291,7 @@ namespace FileIO {
         ofs << "=== DATA MENU RESTORAN ===\n";
         for (const auto& m : menus) {
             ofs << m.id << "|" << m.name << "|" << m.category
-                << "|" << m.price << "|" << (m.available ? "1" : "0") << "\n";
+                << "|" << m.price << "|" << m.stock << "\n";
         }
         ofs.close();
         return true;
@@ -1310,7 +1310,7 @@ namespace FileIO {
             while (std::getline(ss, tok, '|')) parts.push_back(tok);
             if (parts.size() >= 5) {
                 MenuItem m(std::stoi(parts[0]), parts[1], parts[2],
-                           std::stod(parts[3]), parts[4] == "1");
+                           std::stod(parts[3]), std::stoi(parts[4]));
                 result.push_back(m);
             }
         }
