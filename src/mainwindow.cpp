@@ -1333,18 +1333,39 @@ void MainWindow::drawGraph(int step)
         QPainterPath path;
         qreal px = positions[tbl].x();
         qreal py = positions[tbl].y();
-        path.moveTo(px + 20, py + 12);
-        path.cubicTo(px + 20, py + 0, px + 40, py + 0, px + 40, py + 16);
-        path.cubicTo(px + 40, py + 28, px + 20, py + 36, px + 20, py + 40);
-        path.cubicTo(px + 20, py + 36, px + 0, py + 28, px + 0, py + 16);
-        path.cubicTo(px + 0, py + 0, px + 20, py + 0, px + 20, py + 12);
+        
+        // Menggambar bentuk Meja (Kotak dengan sudut membulat, ukuran 40x40)
+        path.addRoundedRect(px, py, 40, 40, 8, 8);
 
         graphScene->addPath(path, QPen(Qt::darkBlue, 2), QBrush(nodeColor));
 
         QGraphicsTextItem* text = graphScene->addText(QString::number(tbl), font);
-        // Posisikan text di tengah lingkaran/love
-        text->setPos(px + 14, py + 12);
+        // Posisikan text persis di tengah meja
+        // Lebar font rata-rata ~10px, Tinggi ~20px. Koordinat tengah meja adalah px+20, py+20.
+        text->setPos(px + 12, py + 10);
     }
+
+    // --- Tambahkan Keterangan (Legend) ---
+    QFont legendFont("Arial", 9, QFont::Normal);
+    
+    QGraphicsTextItem* legendTitle = graphScene->addText("Keterangan:", QFont("Arial", 9, QFont::Bold));
+    legendTitle->setDefaultTextColor(QColor(2, 26, 84)); // Navy
+    legendTitle->setPos(380, 20);
+    
+    // Node default (biru muda)
+    graphScene->addEllipse(380, 50, 15, 15, QPen(Qt::darkBlue, 1), QBrush(QColor(173, 216, 230)));
+    QGraphicsTextItem* txtDefault = graphScene->addText("Meja Tersedia", legendFont);
+    txtDefault->setPos(400, 47);
+
+    // Node hijau (sudah dilewati)
+    graphScene->addEllipse(380, 75, 15, 15, QPen(Qt::darkBlue, 1), QBrush(QColor(144, 238, 144)));
+    QGraphicsTextItem* txtVisited = graphScene->addText("Jalur Dilewati", legendFont);
+    txtVisited->setPos(400, 72);
+
+    // Node oranye (sedang aktif)
+    graphScene->addEllipse(380, 100, 15, 15, QPen(Qt::darkBlue, 1), QBrush(QColor(255, 165, 0)));
+    QGraphicsTextItem* txtActive = graphScene->addText("Meja Terpilih", legendFont);
+    txtActive->setPos(400, 97);
 }
 
 void MainWindow::onAnimateGraphStep()
@@ -2721,20 +2742,51 @@ void MainWindow::onShowRecommendations()
     if (selectedMenu.isEmpty()) return;
 
     listRec->clear();
+    // 1. Rekomendasi Langsung (Direct Neighbors)
     auto recs = menuRecGraph->getRecommendations(selectedMenu.toStdString());
-
     if (recs.empty()) {
-        listRec->addItem("Belum ada data rekomendasi yang cukup (Belum pernah dibeli bersamaan dengan menu lain).");
+        listRec->addItem("Belum ada data rekomendasi yang cukup untuk menu ini.");
         return;
     }
 
-    listRec->addItem(QString("Rekomendasi Teratas untuk \"%1\":").arg(selectedMenu));
+    listRec->addItem("=== REKOMENDASI LANGSUNG (Sering dibeli bersamaan) ===");
     int count = 0;
     for (const auto& pair : recs) {
         if (count >= 5) break; // Ambil 5 teratas
-        listRec->addItem(QString("- %1 (Dibeli bersamaan %2 kali)")
+        listRec->addItem(QString(" • %1 (Dibeli bersamaan %2 kali)")
             .arg(QString::fromStdString(pair.first))
             .arg(pair.second));
         count++;
+    }
+    
+    listRec->addItem(""); // Spasi
+    
+    // 2. Rekomendasi Lanjutan via BFS (Level 1 / Alternatif Teratas)
+    auto bfsRecs = menuRecGraph->getRecommendationsBFS(selectedMenu.toStdString());
+    listRec->addItem("=== REKOMENDASI ALTERNATIF (Menggunakan BFS) ===");
+    if (bfsRecs.empty()) {
+        listRec->addItem(" Tidak ada rekomendasi alternatif.");
+    } else {
+        listRec->addItem(" Hasil pencarian algoritma BFS teratas:");
+        for (const auto& item : bfsRecs) {
+            listRec->addItem(QString(" • %1").arg(QString::fromStdString(item)));
+        }
+    }
+    
+    listRec->addItem(""); // Spasi
+    
+    // 3. Paket Kombo Berantai via DFS
+    auto dfsCombo = menuRecGraph->getRecommendationComboDFS(selectedMenu.toStdString());
+    listRec->addItem("=== REKOMENDASI PAKET KOMBO (Menggunakan DFS) ===");
+    if (dfsCombo.size() < 2) {
+        listRec->addItem(" Data belum cukup untuk membuat paket kombo berantai.");
+    } else {
+        QString comboStr = "";
+        for (size_t i = 0; i < dfsCombo.size(); ++i) {
+            comboStr += QString::fromStdString(dfsCombo[i]);
+            if (i < dfsCombo.size() - 1) comboStr += " \xE2\x9E\xA1 "; // Arrow symbol
+        }
+        listRec->addItem(" Saran Penawaran Paket Khusus:");
+        listRec->addItem(" " + comboStr);
     }
 }

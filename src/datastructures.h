@@ -794,6 +794,80 @@ public:
         });
         return recs;
     }
+
+    // BFS - Rekomendasi Level 1 (Tetangga Langsung)
+    std::vector<std::string> getRecommendationsBFS(const std::string& startItem) {
+        std::vector<std::string> level1Recs;
+        if (adjList.find(startItem) == adjList.end()) return level1Recs;
+
+        std::queue<std::pair<std::string, int>> q;
+        std::unordered_map<std::string, bool> visited;
+
+        q.push({startItem, 0});
+        visited[startItem] = true;
+
+        std::unordered_map<std::string, int> level1Freq;
+
+        while (!q.empty()) {
+            auto current = q.front();
+            q.pop();
+
+            std::string currItem = current.first;
+            int depth = current.second;
+
+            if (depth == 0) { // Hanya proses level 0 untuk mencari tetangga level 1
+                for (const auto& neighbor : adjList[currItem]) {
+                    if (!visited[neighbor.first]) {
+                        visited[neighbor.first] = true;
+                        level1Freq[neighbor.first] = neighbor.second;
+                        q.push({neighbor.first, 1}); // Dimasukkan ke queue sesuai kaidah BFS
+                    }
+                }
+            }
+        }
+
+        std::vector<std::pair<std::string, int>> sortedRecs(level1Freq.begin(), level1Freq.end());
+        std::sort(sortedRecs.begin(), sortedRecs.end(), [](const auto& a, const auto& b) {
+            return a.second > b.second;
+        });
+
+        // Ambil top 3 dari Level 1
+        for (size_t i = 0; i < sortedRecs.size() && i < 3; ++i) {
+            level1Recs.push_back(sortedRecs[i].first);
+        }
+
+        return level1Recs;
+    }
+
+    // DFS - Pencarian Rantai Menu Kombo (Maksimal 4 Menu Berturut-turut)
+    std::vector<std::string> getRecommendationComboDFS(const std::string& startItem) {
+        std::vector<std::string> comboPath;
+        if (adjList.find(startItem) == adjList.end()) return comboPath;
+
+        std::unordered_map<std::string, bool> visited;
+        std::string current = startItem;
+
+        // Cari kombo rantai hingga kedalaman 4
+        for (int step = 0; step < 4; ++step) {
+            comboPath.push_back(current);
+            visited[current] = true;
+
+            std::string nextBest = "";
+            int maxFreq = -1;
+
+            for (const auto& neighbor : adjList[current]) {
+                if (!visited[neighbor.first] && neighbor.second > maxFreq) {
+                    maxFreq = neighbor.second;
+                    nextBest = neighbor.first;
+                }
+            }
+
+            if (nextBest.empty()) break; // Buntu
+            current = nextBest;
+        }
+
+        return comboPath;
+    }
 };
 
 class TableGraph {
