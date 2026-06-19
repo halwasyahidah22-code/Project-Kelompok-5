@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Review UAS — Sistem Restoran C++</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --ink: #1a1a2e;
+    --paper: #faf8f3;
+    --accent: #c0392b;
+    --accent2: #2c3e50;
+    --gold: #b8860b;
+    --green: #1a5c38;
+    --muted: #6b6b6b;
+    --border: #d4c9a8;
+    --code-bg: #1e2430;
+    --code-text: #e8e3d9;
+    --tag-bg: #2c3e50;
+    --tag-text: #ecf0f1;
+    --check: #27ae60;
+    --warn: #e67e22;
+    --missing: #c0392b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.7;
+  }
+
+  /* ── HEADER ── */
+  .cover {
+    background: var(--ink);
+    color: #faf8f3;
+    padding: 64px 60px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(192,57,43,0.15);
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 40%;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(184,134,11,0.08);
+  }
+  .cover-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .cover h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .cover h1 span { color: var(--accent); }
+  .cover .subtitle {
+    font-size: 16px;
+    font-weight: 300;
+    color: #c8c0b0;
+    font-style: italic;
+    margin-bottom: 32px;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .cover-meta-item {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #9a9080;
+  }
+  .cover-meta-item strong { color: #faf8f3; display: block; font-size: 14px; }
+
+  /* ── SUMMARY STRIP ── */
+  .summary-strip {
+    background: var(--accent);
+    padding: 20px 60px;
+    display: flex;
+    gap: 48px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .summary-strip .stat {
+    text-align: center;
+    color: white;
+  }
+  .summary-strip .stat .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .summary-strip .stat .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+  .summary-strip .verdict {
+    margin-left: auto;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    padding: 12px 24px;
+    color: white;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+  .summary-strip .verdict strong { display: block; font-size: 18px; }
+
+  /* ── MAIN CONTENT ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 40px 80px; }
+
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .section-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    opacity: 0.3;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+  }
+  .section-badge {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  /* ── ITEM CARD ── */
+  .impl-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 32px;
+    overflow: hidden;
+    background: white;
+  }
+  .impl-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--accent2);
+    color: white;
+  }
+  .impl-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.15);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .impl-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .impl-status {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .status-ok { background: #27ae60; }
+  .status-partial { background: #e67e22; }
+  .status-missing { background: #c0392b; }
+
+  .impl-body { padding: 20px 24px; }
+
+  .file-loc {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    background: #f0ede4;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 4px 10px;
+    margin-bottom: 12px;
+    color: var(--accent2);
+  }
+  .file-loc span { color: var(--muted); }
+
+  .desc {
+    font-size: 14px;
+    color: #3a3a3a;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-wrap {
+    background: var(--code-bg);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .code-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .code-label span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #8899aa;
+    letter-spacing: 1px;
+  }
+  .code-label .lang-tag {
+    font-size: 10px;
+    background: rgba(192,57,43,0.4);
+    color: #ff9999;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  pre {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--code-text);
+    padding: 18px 20px;
+    overflow-x: auto;
+    tab-size: 4;
+  }
+
+  /* Syntax colors */
+  .kw { color: #c792ea; }  /* keywords */
+  .ty { color: #82aaff; }  /* types */
+  .fn { color: #82cfff; }  /* functions */
+  .st { color: #c3e88d; }  /* strings */
+  .cm { color: #546e7a; font-style: italic; }  /* comments */
+  .num { color: #f78c6c; }  /* numbers */
+  .op { color: #89ddff; }   /* operators */
+  .macro { color: #ffcb6b; } /* macros/includes */
+  .nm { color: #eefdf1; }   /* namespace */
+
+  /* ── NOTES / ANNOTATIONS ── */
+  .note {
+    border-left: 3px solid var(--gold);
+    background: #fffdf0;
+    padding: 10px 16px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #5a4a00;
+    border-radius: 0 4px 4px 0;
+  }
+  .note strong { color: var(--gold); }
+
+  .warn-box {
+    border-left: 3px solid var(--warn);
+    background: #fff8f0;
+    padding: 10px 16px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #5a3000;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .ok-box {
+    border-left: 3px solid var(--check);
+    background: #f0fff4;
+    padding: 10px 16px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #0a3d20;
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; margin: 16px 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #f0ede4;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── TABLE ── */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 24px 0;
+  }
+  .summary-table th {
+    background: var(--ink);
+    color: white;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  .summary-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .summary-table tr:nth-child(even) td { background: #f5f2ea; }
+  .badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    color: white;
+  }
+  .b-ok { background: #27ae60; }
+  .b-partial { background: #e67e22; }
+  .b-missing { background: #c0392b; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    color: #6b6060;
+    text-align: center;
+    padding: 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  /* ── PART TITLE ── */
+  .part-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin: 56px 0 8px;
+    padding-top: 8px;
+    border-top: 3px solid var(--accent);
+    display: inline-block;
+  }
+
+  @media print {
+    .cover { break-after: page; }
+    .impl-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ COVER ══ -->
+<div class="cover">
+  <div class="cover-label">● Laporan Review UAS Terintegrasi</div>
+  <h1>Sistem Manajemen<br>Restoran <span>C++</span></h1>
+  <p class="subtitle">Analisis implementasi 11 syarat Praktikum Alpro &amp; 8 Struktur Data</p>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><strong>File Sumber</strong>datastructures.h · mainwindow.cpp · main.cpp</div>
+    <div class="cover-meta-item"><strong>Framework</strong>Qt · C++17</div>
+    <div class="cover-meta-item"><strong>Mata Kuliah</strong>Alpro · Strukdat (4 MK)</div>
+  </div>
+</div>
+
+<!-- ══ SUMMARY STRIP ══ -->
+<div class="summary-strip">
+  <div class="stat"><div class="num">11</div><div class="label">Syarat Alpro</div></div>
+  <div class="stat"><div class="num">11</div><div class="label">Terimplementasi</div></div>
+  <div class="stat"><div class="num">8</div><div class="label">Struktur Data</div></div>
+  <div class="stat"><div class="num">8</div><div class="label">Terimplementasi</div></div>
+  <div class="verdict">Status Keseluruhan<strong>✅ LENGKAP</strong></div>
+</div>
+
+<main>
+
+<!-- ══ QUICK MAP TABLE ══ -->
+<div class="section-header">
+  <div class="section-num">0</div>
+  <div class="section-title">Peta Implementasi Cepat</div>
+  <div class="section-badge">Overview</div>
+</div>
+
+<table class="summary-table">
+  <tr>
+    <th>#</th><th>Syarat</th><th>File</th><th>Lokasi Utama</th><th>Status</th>
+  </tr>
+  <tr><td>1</td><td>struct</td><td>datastructures.h</td><td>Line 21–78 (MenuItem, Order, Table, Staff, Action)</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>2</td><td>References (&amp;)</td><td>datastructures.h</td><td>Line 93 — <code>insert(const MenuItem&amp; item)</code></td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>3</td><td>Pointer (*)</td><td>datastructures.h</td><td>Line 27, 38, 51, 59 — <code>next*</code>, <code>AVLNode*</code>, semua linked list</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>4</td><td>namespace</td><td>datastructures.h</td><td>Line 17 — <code>namespace RestaurantSystem</code>, <code>namespace Sorting</code>, <code>namespace FileIO</code>, <code>namespace STLUtils</code></td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>5</td><td>Callback Function</td><td>datastructures.h + mainwindow.cpp</td><td>forEachMenu, applyToAllOrders, filterMenuByCategory, processMenusWithCondition</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>6</td><td>Default Argument / Inline Function</td><td>datastructures.h</td><td>Line 30 — constructor MenuItem, Order, Table, Staff; semua fungsi <code>inline</code></td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>7</td><td>Function Overloading / Template</td><td>datastructures.h</td><td>displayItem (3 overload) + linearSearch&lt;T&gt;, linearSearchAll&lt;T&gt;, countIf&lt;T&gt;</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>8</td><td>Exception Handling</td><td>datastructures.h + mainwindow.cpp</td><td>RestaurantException, try-catch di onAddMenuItem, onDequeueOrder, onRotateShift, onUndo</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>9</td><td>STL Vector/List, Iterator, Sort, Find, Count</td><td>datastructures.h + mainwindow.cpp</td><td>std::vector, std::list, std::sort, std::find_if, std::count_if + iterator di STLUtils</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>10</td><td>File Handling</td><td>datastructures.h</td><td>namespace FileIO — saveMenuToFile, loadMenuFromFile, saveOrdersToFile</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>11</td><td>Lambda Expression</td><td>datastructures.h + mainwindow.cpp</td><td>Di dalam sort, find_if, count_if, callback, dan makeCard</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+</table>
+
+<table class="summary-table">
+  <tr>
+    <th>#</th><th>Struktur Data</th><th>Kelas / Fungsi</th><th>Penggunaan dalam Sistem</th><th>Status</th>
+  </tr>
+  <tr><td>1</td><td>Linked List (Single)</td><td>MenuLinkedList</td><td>Master data menu (insert, remove, find, getAll)</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>2</td><td>Circular Linked List</td><td>TableCircularList, StaffCircularList</td><td>Rotasi meja aktif &amp; shift staf</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>3</td><td>Stack (LIFO)</td><td>ActionStack</td><td>History aksi &amp; fitur Undo</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>4</td><td>Priority Queue</td><td>OrderQueue + OrderComparator</td><td>Antrian order VIP &gt; Normal, FIFO dalam prioritas sama</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>5</td><td>AVL Tree</td><td>AVLTree</td><td>Pencarian menu cepat O(log n) dengan auto-balancing</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>6</td><td>Graph + BFS/DFS</td><td>TableGraph</td><td>Relasi/layout antar meja, BFS &amp; DFS dari meja aktif</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>7</td><td>Hashing / Hash Table</td><td>MenuHashTable</td><td>Lookup O(1) menu by ID &amp; by name, countByCategory</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>8</td><td>Sorting</td><td>namespace Sorting</td><td>Bubble Sort (harga), STL sort+lambda (nama), Merge Sort (total order)</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+</table>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════
+     BAGIAN A — 11 SYARAT PRAKTIKUM ALPRO
+═══════════════════════════════════════════════════════════ -->
+<div class="part-title">Bagian A — 11 Syarat Praktikum Algoritma &amp; Pemrograman</div>
+
+<!-- 1. STRUCT -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 1</span>
+    <span class="impl-title">struct — Definisi Entitas / Node</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · Line 21–78</div>
+    <p class="desc">Terdapat 5 struct utama: <strong>MenuItem</strong> (data menu sekaligus node Linked List), <strong>Order</strong> (data pesanan + node LL), <strong>Table</strong> (meja + node Circular LL), <strong>Staff</strong> (staf + node Circular LL), dan <strong>Action</strong> (untuk Stack). Struct sekaligus difungsikan sebagai <em>node</em> struktur data dinamis via pointer <code>next</code>.</p>
+
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · Line 21–37</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// Struct 1: entitas menu + sekaligus node Linked List</span>
+<span class="kw">struct</span> <span class="ty">MenuItem</span> {
+    <span class="ty">int</span>         id;
+    std::<span class="ty">string</span>  name;
+    std::<span class="ty">string</span>  category;
+    <span class="ty">double</span>      price;
+    <span class="ty">bool</span>        available;
+    <span class="ty">MenuItem</span>*  next;   <span class="cm">// pointer node linked list</span>
+
+    <span class="cm">// constructor dengan default argument (syarat 6)</span>
+    <span class="fn">MenuItem</span>(<span class="ty">int</span> i = <span class="num">0</span>, std::<span class="ty">string</span> n = <span class="st">""</span>, std::<span class="ty">string</span> c = <span class="st">"Umum"</span>,
+             <span class="ty">double</span> p = <span class="num">0.0</span>, <span class="ty">bool</span> a = <span class="kw">true</span>)
+        : id(i), name(n), category(c), price(p), available(a), next(<span class="kw">nullptr</span>) {}
+};
+
+<span class="cm">// Struct 2: entitas order + node Linked List</span>
+<span class="kw">struct</span> <span class="ty">Order</span> {
+    <span class="ty">int</span>   orderId;
+    <span class="ty">int</span>   tableNumber;
+    std::<span class="ty">vector</span>&lt;<span class="ty">OrderItem</span>&gt; items;
+    <span class="ty">double</span> totalPrice;
+    std::<span class="ty">string</span> status;
+    <span class="ty">int</span>   priority;  <span class="cm">// 1=VIP, 2=Normal</span>
+    <span class="ty">Order</span>* next;
+
+    <span class="fn">Order</span>(<span class="ty">int</span> oid=<span class="num">0</span>, <span class="ty">int</span> tbl=<span class="num">0</span>, <span class="ty">int</span> prio=<span class="num">2</span>)
+        : orderId(oid), tableNumber(tbl), totalPrice(<span class="num">0.0</span>),
+          status(<span class="st">"pending"</span>), priority(prio), next(<span class="kw">nullptr</span>) {}
+};
+
+<span class="cm">// Struct 3: meja (node Circular LL), Struct 4: staf, Struct 5: aksi (untuk Stack)</span>
+<span class="kw">struct</span> <span class="ty">Table</span> { <span class="ty">int</span> tableNumber, capacity; <span class="ty">bool</span> isOccupied; <span class="ty">int</span> currentOrderId; <span class="ty">Table</span>* next; };
+<span class="kw">struct</span> <span class="ty">Staff</span> { <span class="ty">int</span> staffId; std::<span class="ty">string</span> name, role; <span class="ty">bool</span> onDuty; <span class="ty">Staff</span>* next; };
+<span class="kw">struct</span> <span class="ty">Action</span> { std::<span class="ty">string</span> type, description; <span class="ty">int</span> relatedId; };</pre>
+    </div>
+    <div class="ok-box">✅ Struct digunakan ganda: sebagai entitas data sekaligus node dinamis — sesuai instruksi soal.</div>
+  </div>
+</div>
+
+<!-- 2. REFERENCES -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 2</span>
+    <span class="impl-title">References (&amp;) — Parameter Fungsi</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · Line 93, 147, 201, 340+</div>
+    <p class="desc">Reference digunakan sebagai parameter fungsi di semua kelas linked list dan callback, untuk menghindari penyalinan data (pass-by-reference) dan meningkatkan efisiensi.</p>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · MenuLinkedList::insert</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// Parameter const reference — tidak ada salinan data</span>
+<span class="kw">void</span> <span class="fn">insert</span>(<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> item) {
+    <span class="ty">MenuItem</span>* node = <span class="kw">new</span> <span class="ty">MenuItem</span>(item.id, item.name,
+                                  item.category, item.price,
+                                  item.available);
+    <span class="cm">// ... logika insert linked list</span>
+}
+
+<span class="cm">// Referensi pada callback typedef</span>
+<span class="kw">using</span> <span class="ty">MenuCallback</span>  = std::<span class="ty">function</span>&lt;<span class="kw">void</span>(<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span>)&gt;;
+<span class="kw">using</span> <span class="ty">OrderCallback</span> = std::<span class="ty">function</span>&lt;<span class="kw">void</span>(<span class="kw">const</span> <span class="ty">Order</span><span class="op">&amp;</span>)&gt;;
+
+<span class="cm">// Referensi pada parameter callback functions</span>
+<span class="kw">inline</span> <span class="kw">void</span> <span class="fn">forEachMenu</span>(<span class="kw">const</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt;<span class="op">&amp;</span> menus, <span class="ty">MenuCallback</span> cb) { ... }
+<span class="kw">inline</span> <span class="kw">void</span> <span class="fn">applyToAllOrders</span>(std::<span class="ty">list</span>&lt;<span class="ty">Order</span>*&gt;<span class="op">&amp;</span> orders, <span class="ty">OrderCallback</span> cb) { ... }</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 3. POINTER -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 3</span>
+    <span class="impl-title">Pointer (*) — Manipulasi Memori Dinamis</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · Line 27, 87–130, 178–220, AVLTree, dst.</div>
+    <p class="desc">Pointer digunakan secara ekstensif: sebagai penghubung antar node (pointer <code>next</code>), alokasi dinamis (<code>new</code>/<code>delete</code>), return nilai dari fungsi pencarian, dan traversal tree.</p>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · MenuLinkedList (pointer sebagai node link)</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// Pointer sebagai penghubung node (syarat 3)</span>
+<span class="kw">class</span> <span class="ty">MenuLinkedList</span> {
+<span class="kw">private</span>:
+    <span class="ty">MenuItem</span>* head;  <span class="cm">// pointer ke node pertama</span>
+    <span class="ty">int</span> size;
+
+<span class="kw">public</span>:
+    <span class="kw">void</span> <span class="fn">insert</span>(<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> item) {
+        <span class="ty">MenuItem</span>* node = <span class="kw">new</span> <span class="ty">MenuItem</span>(...);  <span class="cm">// alokasi dinamis</span>
+        <span class="kw">if</span> (!head) {
+            head = node;
+        } <span class="kw">else</span> {
+            <span class="ty">MenuItem</span>* curr = head;             <span class="cm">// traversal pakai pointer</span>
+            <span class="kw">while</span> (curr-&gt;next) curr = curr-&gt;next;
+            curr-&gt;next = node;
+        }
+    }
+
+    <span class="ty">MenuItem</span>* <span class="fn">find</span>(<span class="ty">int</span> id) <span class="kw">const</span> {        <span class="cm">// return pointer</span>
+        <span class="ty">MenuItem</span>* curr = head;
+        <span class="kw">while</span> (curr) {
+            <span class="kw">if</span> (curr-&gt;id == id) <span class="kw">return</span> curr;
+            curr = curr-&gt;next;
+        }
+        <span class="kw">return</span> <span class="kw">nullptr</span>;
+    }
+
+    std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt; <span class="fn">getAll</span>() <span class="kw">const</span> { <span class="cm">// vector of pointers</span>
+        std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt; result;
+        <span class="ty">MenuItem</span>* curr = head;
+        <span class="kw">while</span> (curr) { result.<span class="fn">push_back</span>(curr); curr = curr-&gt;next; }
+        <span class="kw">return</span> result;
+    }
+
+    <span class="cm">// Destructor: hapus semua node dengan delete (syarat 3)</span>
+    ~<span class="fn">MenuLinkedList</span>() {
+        <span class="ty">MenuItem</span>* curr = head;
+        <span class="kw">while</span> (curr) { <span class="ty">MenuItem</span>* tmp = curr-&gt;next; <span class="kw">delete</span> curr; curr = tmp; }
+    }
+};</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 4. NAMESPACE -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 4</span>
+    <span class="impl-title">namespace — Pembungkus Logika Utama</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · Line 17, 450+, 480+, 520+</div>
+    <p class="desc">Terdapat 4 namespace: <code>RestaurantSystem</code> (namespace utama yang membungkus semua kelas dan fungsi), <code>Sorting</code> (fungsi-fungsi pengurutan), <code>FileIO</code> (operasi file), dan <code>STLUtils</code> (utilitas STL).</p>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · Struktur namespace</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// Namespace utama — membungkus seluruh sistem</span>
+<span class="kw">namespace</span> <span class="nm">RestaurantSystem</span> {
+
+    <span class="kw">struct</span> <span class="ty">MenuItem</span> { ... };
+    <span class="kw">struct</span> <span class="ty">Order</span>    { ... };
+    <span class="kw">class</span>  <span class="ty">MenuLinkedList</span>   { ... };
+    <span class="kw">class</span>  <span class="ty">AVLTree</span>           { ... };
+    <span class="kw">class</span>  <span class="ty">MenuHashTable</span>     { ... };
+
+    <span class="cm">// Sub-namespace Sorting di dalam RestaurantSystem</span>
+    <span class="kw">namespace</span> <span class="nm">Sorting</span> {
+        <span class="kw">inline</span> <span class="kw">void</span> <span class="fn">bubbleSortByPrice</span>(std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt;<span class="op">&amp;</span> vec, <span class="ty">bool</span> ascending = <span class="kw">true</span>) { ... }
+        <span class="kw">inline</span> <span class="kw">void</span> <span class="fn">sortByName</span>(std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt;<span class="op">&amp;</span> vec) { ... }
+        <span class="kw">inline</span> <span class="kw">void</span> <span class="fn">mergeSort</span>(std::<span class="ty">vector</span>&lt;<span class="ty">Order</span>*&gt;<span class="op">&amp;</span> vec, <span class="ty">int</span> l, <span class="ty">int</span> r) { ... }
+    }
+
+    <span class="cm">// Sub-namespace FileIO</span>
+    <span class="kw">namespace</span> <span class="nm">FileIO</span> {
+        <span class="kw">inline</span> <span class="ty">bool</span> <span class="fn">saveMenuToFile</span>(...) { ... }
+        <span class="kw">inline</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt; <span class="fn">loadMenuFromFile</span>(...) { ... }
+    }
+
+    <span class="cm">// Sub-namespace STLUtils</span>
+    <span class="kw">namespace</span> <span class="nm">STLUtils</span> {
+        <span class="kw">inline</span> <span class="ty">int</span> <span class="fn">countOrdersByStatus</span>(...) { ... }
+        <span class="kw">inline</span> <span class="ty">int</span> <span class="fn">countAvailableMenus</span>(...) { ... }
+    }
+
+} <span class="cm">// namespace RestaurantSystem</span>
+
+<span class="cm">// Penggunaan di mainwindow.cpp (using namespace)</span>
+<span class="kw">using namespace</span> <span class="nm">RestaurantSystem</span>;
+<span class="cm">// Panggil: Sorting::bubbleSortByPrice(...)</span>
+<span class="cm">//          FileIO::saveMenuToFile(...)</span>
+<span class="cm">//          STLUtils::countOccupiedTables(...)</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- 5. CALLBACK -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 5</span>
+    <span class="impl-title">Callback Function — Fungsi Menerima Fungsi Lain</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · Line 390–440 &nbsp;|&nbsp; <span>mainwindow.cpp</span> · Line 1119–1133, 1360–1366</div>
+    <p class="desc">Terdapat 4 fungsi callback berbeda, semuanya menerima <code>std::function</code> sebagai parameter dan dipanggil di dalam mainwindow dengan lambda expression.</p>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · 4 Definisi Callback</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// Typedef callback (alias std::function)</span>
+<span class="kw">using</span> <span class="ty">MenuCallback</span>  = std::<span class="ty">function</span>&lt;<span class="kw">void</span>(<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span>)&gt;;
+<span class="kw">using</span> <span class="ty">OrderCallback</span> = std::<span class="ty">function</span>&lt;<span class="kw">void</span>(<span class="kw">const</span> <span class="ty">Order</span><span class="op">&amp;</span>)&gt;;
+
+<span class="cm">// [Callback 1] forEachMenu — iterasi semua menu dengan callback</span>
+<span class="kw">inline</span> <span class="kw">void</span> <span class="fn">forEachMenu</span>(<span class="kw">const</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt;<span class="op">&amp;</span> menus, <span class="ty">MenuCallback</span> cb) {
+    <span class="kw">for</span> (<span class="kw">const</span> <span class="kw">auto</span>* m : menus) { <span class="kw">if</span> (m) cb(*m); }
+}
+
+<span class="cm">// [Callback 2] applyToAllOrders — iterasi semua order dengan callback</span>
+<span class="kw">inline</span> <span class="kw">void</span> <span class="fn">applyToAllOrders</span>(std::<span class="ty">list</span>&lt;<span class="ty">Order</span>*&gt;<span class="op">&amp;</span> orders, <span class="ty">OrderCallback</span> cb) {
+    <span class="kw">for</span> (<span class="kw">auto</span>* o : orders) { <span class="kw">if</span> (o) cb(*o); }
+}
+
+<span class="cm">// [Callback 3] filterMenuByCategory — filter + callback</span>
+<span class="kw">inline</span> <span class="kw">void</span> <span class="fn">filterMenuByCategory</span>(<span class="kw">const</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt;<span class="op">&amp;</span> menus,
+                                  <span class="kw">const</span> std::<span class="ty">string</span><span class="op">&amp;</span> category, <span class="ty">MenuCallback</span> cb) {
+    <span class="kw">for</span> (<span class="kw">const</span> <span class="kw">auto</span>* m : menus) { <span class="kw">if</span> (m && m-&gt;category == category) cb(*m); }
+}
+
+<span class="cm">// [Callback 4] processMenusWithCondition — callback generik dengan predikat</span>
+<span class="kw">inline</span> <span class="kw">void</span> <span class="fn">processMenusWithCondition</span>(<span class="kw">const</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt;<span class="op">&amp;</span> menus,
+                                       std::<span class="ty">function</span>&lt;<span class="ty">bool</span>(<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span>)&gt; predicate,
+                                       <span class="ty">MenuCallback</span> cb) {
+    <span class="kw">for</span> (<span class="kw">const</span> <span class="kw">auto</span>* m : menus) { <span class="kw">if</span> (m && predicate(*m)) cb(*m); }
+}</pre>
+    </div>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>mainwindow.cpp · Pemanggilan Callback dengan Lambda</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// [Callback 1] Dipakai di onAddMenuItem — log menu baru</span>
+<span class="fn">forEachMenu</span>(newItems, [<span class="kw">this</span>](<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> m) {
+    <span class="fn">addLog</span>(QString(<span class="st">"✅ Callback dipanggil untuk: %1"</span>)
+           .arg(QString::<span class="fn">fromStdString</span>(m.name)));
+});
+
+<span class="cm">// [Callback 3] Filter menu sekategori setelah tambah</span>
+<span class="fn">filterMenuByCategory</span>(allMenus, item.category,
+    [<span class="op">&amp;</span>sameCategory](<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span>) { sameCategory++; });
+
+<span class="cm">// [Callback 2] Hitung total order aktif</span>
+<span class="fn">applyToAllOrders</span>(orderQueue-&gt;<span class="fn">getAllOrders</span>(), [<span class="op">&amp;</span>totalAllOrders](<span class="kw">const</span> <span class="ty">Order</span><span class="op">&amp;</span> o) {
+    totalAllOrders += o.totalPrice;
+});</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 6. DEFAULT ARGUMENT / INLINE -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 6</span>
+    <span class="impl-title">Default Argument &amp; Inline Function</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · Line 30–35, 485+, semua fungsi namespace</div>
+    <p class="desc">Default argument digunakan di semua constructor struct. Fungsi <code>inline</code> digunakan pada semua fungsi utility di dalam namespace (Sorting, FileIO, STLUtils, display).</p>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · Default Argument</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// Default argument di constructor struct</span>
+<span class="fn">MenuItem</span>(<span class="ty">int</span> i = <span class="num">0</span>, std::<span class="ty">string</span> n = <span class="st">""</span>, std::<span class="ty">string</span> c = <span class="st">"Umum"</span>,
+         <span class="ty">double</span> p = <span class="num">0.0</span>, <span class="ty">bool</span> a = <span class="kw">true</span>) : ...
+
+<span class="fn">Order</span>(<span class="ty">int</span> oid = <span class="num">0</span>, <span class="ty">int</span> tbl = <span class="num">0</span>, <span class="ty">int</span> prio = <span class="num">2</span>) : ...
+
+<span class="fn">Table</span>(<span class="ty">int</span> num = <span class="num">0</span>, <span class="ty">int</span> cap = <span class="num">4</span>) : ...
+
+<span class="cm">// Default argument di fungsi biasa</span>
+<span class="kw">inline</span> <span class="ty">bool</span> <span class="fn">saveMenuToFile</span>(<span class="kw">const</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt;<span class="op">&amp;</span> menus,
+                            <span class="kw">const</span> std::<span class="ty">string</span><span class="op">&amp;</span> filename = <span class="st">"menu.txt"</span>) { ... }
+
+<span class="kw">inline</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt; <span class="fn">loadMenuFromFile</span>(<span class="kw">const</span> std::<span class="ty">string</span><span class="op">&amp;</span> filename = <span class="st">"menu.txt"</span>) { ... }
+
+<span class="kw">inline</span> <span class="kw">void</span> <span class="fn">bubbleSortByPrice</span>(std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt;<span class="op">&amp;</span> vec, <span class="ty">bool</span> ascending = <span class="kw">true</span>) { ... }
+
+<span class="cm">// Inline function — optimisasi fungsi pendek</span>
+<span class="kw">inline</span> std::<span class="ty">string</span> <span class="fn">displayItem</span>(<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> m) { <span class="kw">return</span> <span class="st">"[MENU #"</span> + ...; }
+<span class="kw">inline</span> std::<span class="ty">string</span> <span class="fn">displayItem</span>(<span class="kw">const</span> <span class="ty">Order</span><span class="op">&amp;</span> o)    { <span class="kw">return</span> <span class="st">"[ORDER #"</span> + ...; }
+<span class="kw">inline</span> std::<span class="ty">string</span> <span class="fn">displayItem</span>(<span class="kw">const</span> <span class="ty">Staff</span><span class="op">&amp;</span> s)    { <span class="kw">return</span> <span class="st">"[STAF #"</span> + ...; }</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 7. OVERLOADING / TEMPLATE -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 7</span>
+    <span class="impl-title">Function Overloading &amp; Function Template</span>
+    <span class="impl-status status-ok">✅ TERPENUHI (keduanya)</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · Line 350–380 (Overloading) &nbsp;|&nbsp; Line 310–345 (Template)</div>
+    <p class="desc">Keduanya diimplementasikan: <strong>Function Overloading</strong> — fungsi <code>displayItem</code> dengan 3 versi berbeda parameter. <strong>Function Template</strong> — 3 template generic (<code>linearSearch&lt;T&gt;</code>, <code>linearSearchAll&lt;T&gt;</code>, <code>countIf&lt;T&gt;</code>) yang dipakai untuk tipe MenuItem maupun Staff.</p>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · Function Overloading (3 versi displayItem)</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// Overload 1 — parameter MenuItem</span>
+<span class="kw">inline</span> std::<span class="ty">string</span> <span class="fn">displayItem</span>(<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> m) {
+    <span class="kw">return</span> <span class="st">"[MENU #"</span> + std::<span class="fn">to_string</span>(m.id) + <span class="st">"] "</span>
+         + m.name + <span class="st">" | "</span> + m.category + <span class="st">" | Rp"</span>
+         + std::<span class="fn">to_string</span>((<span class="ty">int</span>)m.price)
+         + (m.available ? <span class="st">" | TERSEDIA"</span> : <span class="st">" | HABIS"</span>);
+}
+
+<span class="cm">// Overload 2 — parameter Order (nama sama, tipe beda)</span>
+<span class="kw">inline</span> std::<span class="ty">string</span> <span class="fn">displayItem</span>(<span class="kw">const</span> <span class="ty">Order</span><span class="op">&amp;</span> o) {
+    <span class="kw">return</span> <span class="st">"[ORDER #"</span> + std::<span class="fn">to_string</span>(o.orderId) + <span class="st">"] Meja "</span>
+         + std::<span class="fn">to_string</span>(o.tableNumber)
+         + (o.priority == <span class="num">1</span> ? <span class="st">" | VIP"</span> : <span class="st">" | Normal"</span>);
+}
+
+<span class="cm">// Overload 3 — parameter Staff</span>
+<span class="kw">inline</span> std::<span class="ty">string</span> <span class="fn">displayItem</span>(<span class="kw">const</span> <span class="ty">Staff</span><span class="op">&amp;</span> s) {
+    <span class="kw">return</span> <span class="st">"[STAF #"</span> + std::<span class="fn">to_string</span>(s.staffId) + <span class="st">"] "</span>
+         + s.name + <span class="st">" | "</span> + s.role
+         + (s.onDuty ? <span class="st">" | BERTUGAS"</span> : <span class="st">" | ISTIRAHAT"</span>);
+}</pre>
+    </div>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · Function Template (generic search)</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// Template 1 — mencari satu elemen pertama yang cocok</span>
+<span class="kw">template</span>&lt;<span class="kw">typename</span> T&gt;
+T* <span class="fn">linearSearch</span>(std::<span class="ty">vector</span>&lt;T*&gt;<span class="op">&amp;</span> vec, std::<span class="ty">function</span>&lt;<span class="ty">bool</span>(T*)&gt; predicate) {
+    <span class="kw">auto</span> it = std::<span class="fn">find_if</span>(vec.begin(), vec.end(), predicate);
+    <span class="kw">return</span> (it != vec.end()) ? *it : <span class="kw">nullptr</span>;
+}
+
+<span class="cm">// Template 2 — mencari SEMUA elemen yang cocok</span>
+<span class="kw">template</span>&lt;<span class="kw">typename</span> T&gt;
+std::<span class="ty">vector</span>&lt;T*&gt; <span class="fn">linearSearchAll</span>(std::<span class="ty">vector</span>&lt;T*&gt;<span class="op">&amp;</span> vec, std::<span class="ty">function</span>&lt;<span class="ty">bool</span>(T*)&gt; predicate) {
+    std::<span class="ty">vector</span>&lt;T*&gt; result;
+    std::<span class="fn">copy_if</span>(vec.begin(), vec.end(), std::<span class="fn">back_inserter</span>(result), predicate);
+    <span class="kw">return</span> result;
+}
+
+<span class="cm">// Penggunaan di mainwindow.cpp — dengan tipe MenuItem</span>
+<span class="ty">MenuItem</span>* found = <span class="fn">linearSearch</span>&lt;<span class="ty">MenuItem</span>&gt;(allPtrs,
+    [<span class="op">&amp;</span>query](<span class="ty">MenuItem</span>* m) { <span class="kw">return</span> m-&gt;name.find(query) != std::<span class="ty">string</span>::npos; });
+
+<span class="cm">// Penggunaan dengan tipe Staff</span>
+<span class="ty">Staff</span>* toDelete = <span class="fn">linearSearch</span>&lt;<span class="ty">Staff</span>&gt;(allStaffs,
+    [staffId](<span class="ty">Staff</span>* s) { <span class="kw">return</span> s-&gt;staffId == staffId; });</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 8. EXCEPTION HANDLING -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 8</span>
+    <span class="impl-title">Exception Handling — try, catch, throw</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · Line akhir (RestaurantException) &nbsp;|&nbsp; <span>mainwindow.cpp</span> · Line 1098, 1393, 1546, 1569</div>
+    <p class="desc">Custom exception class <code>RestaurantException</code> dibuat, dan try-catch digunakan di 4 fungsi kritis: tambah menu, dequeue order, rotasi shift staf, dan undo.</p>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · Custom Exception Class</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="kw">class</span> <span class="ty">RestaurantException</span> : <span class="kw">public</span> std::<span class="ty">exception</span> {
+    std::<span class="ty">string</span> msg;
+<span class="kw">public</span>:
+    <span class="fn">RestaurantException</span>(<span class="kw">const</span> std::<span class="ty">string</span><span class="op">&amp;</span> m) : msg(m) {}
+    <span class="kw">const</span> <span class="ty">char</span>* <span class="fn">what</span>() <span class="kw">const noexcept override</span> { <span class="kw">return</span> msg.<span class="fn">c_str</span>(); }
+};</pre>
+    </div>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>mainwindow.cpp · Penggunaan try-catch di onAddMenuItem</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="kw">try</span> {
+    <span class="cm">// Validasi — throw jika input tidak valid</span>
+    <span class="kw">if</span> (name.isEmpty())
+        <span class="kw">throw</span> <span class="ty">RestaurantException</span>(<span class="st">"Nama menu tidak boleh kosong!"</span>);
+
+    <span class="kw">if</span> (price &lt;= <span class="num">0</span>)
+        <span class="kw">throw</span> <span class="ty">RestaurantException</span>(<span class="st">"Harga harus lebih dari 0!"</span>);
+
+    <span class="cm">// ... logika tambah menu ...</span>
+
+} <span class="kw">catch</span> (<span class="kw">const</span> <span class="ty">RestaurantException</span><span class="op">&amp;</span> e) {
+    <span class="fn">QMessageBox::warning</span>(<span class="kw">this</span>, <span class="st">"Validasi Gagal"</span>, e.<span class="fn">what</span>());
+}
+
+<span class="cm">// Di onDequeueOrder</span>
+<span class="kw">try</span> {
+    <span class="kw">if</span> (orderQueue-&gt;<span class="fn">isEmpty</span>())
+        <span class="kw">throw</span> <span class="ty">RestaurantException</span>(<span class="st">"Tidak ada order dalam antrian!"</span>);
+    Order* order = orderQueue-&gt;<span class="fn">dequeue</span>();
+} <span class="kw">catch</span> (<span class="kw">const</span> <span class="ty">RestaurantException</span><span class="op">&amp;</span> e) { ... }
+
+<span class="cm">// Di onUndo — tangkap std::runtime_error dari ActionStack::pop</span>
+<span class="kw">try</span> {
+    Action a = actionStack-&gt;<span class="fn">pop</span>();
+} <span class="kw">catch</span> (<span class="kw">const</span> std::<span class="ty">runtime_error</span><span class="op">&amp;</span> e) {
+    <span class="fn">QMessageBox::information</span>(<span class="kw">this</span>, <span class="st">"Undo"</span>, e.<span class="fn">what</span>());
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 9. STL -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 9</span>
+    <span class="impl-title">STL — vector, list, iterator, sort, find, count</span>
+    <span class="impl-status status-ok">✅ TERPENUHI (semua)</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · STLUtils namespace &nbsp;|&nbsp; <span>mainwindow.cpp</span> · Line 1051–1090, 1627–1690</div>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · STL vector, list, iterator, sort, find, count</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// STL vector — penyimpanan data sementara</span>
+std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt; allMenus = menuList-&gt;<span class="fn">getAll</span>();
+std::<span class="ty">vector</span>&lt;<span class="ty">Order</span>*&gt;    allOrders;
+
+<span class="cm">// STL list — penyimpanan order di OrderQueue</span>
+std::<span class="ty">list</span>&lt;<span class="ty">Order</span>*&gt; allOrders; <span class="cm">// di dalam class OrderQueue</span>
+
+<span class="cm">// Iterator — traversal manual pada list</span>
+<span class="kw">auto</span> it = allOrders.<span class="fn">begin</span>();
+<span class="kw">while</span> (it != allOrders.<span class="fn">end</span>()) { ... ++it; }
+
+<span class="cm">// STL sort + lambda (Sorting::sortByName)</span>
+std::<span class="fn">sort</span>(vec.<span class="fn">begin</span>(), vec.<span class="fn">end</span>(),
+    [](<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> a, <span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> b) { <span class="kw">return</span> a.name &lt; b.name; });
+
+<span class="cm">// STL find_if (STLUtils::findOrderById)</span>
+<span class="kw">return</span> std::<span class="fn">find_if</span>(allOrders.<span class="fn">begin</span>(), allOrders.<span class="fn">end</span>(),
+    [targetId](<span class="ty">Order</span>* o) { <span class="kw">return</span> o-&gt;orderId == targetId; });
+
+<span class="cm">// STL count_if — hitung meja terisi</span>
+<span class="kw">inline</span> <span class="ty">int</span> <span class="fn">countOccupiedTables</span>(<span class="kw">const</span> std::<span class="ty">vector</span>&lt;<span class="ty">Table</span>*&gt;<span class="op">&amp;</span> tables) {
+    <span class="kw">return</span> (<span class="ty">int</span>)std::<span class="fn">count_if</span>(tables.<span class="fn">begin</span>(), tables.<span class="fn">end</span>(),
+        [](<span class="ty">Table</span>* t) { <span class="kw">return</span> t && t-&gt;isOccupied; });
+}
+
+<span class="cm">// STL count_if — hitung menu tersedia</span>
+<span class="kw">inline</span> <span class="ty">int</span> <span class="fn">countAvailableMenus</span>(<span class="kw">const</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt;<span class="op">&amp;</span> menus) {
+    <span class="kw">return</span> (<span class="ty">int</span>)std::<span class="fn">count_if</span>(menus.<span class="fn">begin</span>(), menus.<span class="fn">end</span>(),
+        [](<span class="ty">MenuItem</span>* m) { <span class="kw">return</span> m && m-&gt;available; });
+}
+
+<span class="cm">// count_if gabungan — statistik order per status</span>
+<span class="kw">inline</span> std::<span class="ty">unordered_map</span>&lt;std::<span class="ty">string</span>, <span class="ty">int</span>&gt; <span class="fn">getOrderStatusSummary</span>(...) {
+    std::<span class="ty">unordered_map</span>&lt;std::<span class="ty">string</span>, <span class="ty">int</span>&gt; summary;
+    <span class="kw">for</span> (<span class="kw">const</span> <span class="kw">auto</span><span class="op">&amp;</span> s : {<span class="st">"pending"</span>, <span class="st">"preparing"</span>, <span class="st">"served"</span>, <span class="st">"paid"</span>})
+        summary[s] = (<span class="ty">int</span>)std::<span class="fn">count_if</span>(orders.<span class="fn">begin</span>(), orders.<span class="fn">end</span>(),
+            [<span class="op">&amp;</span>s](<span class="ty">Order</span>* o) { <span class="kw">return</span> o-&gt;status == s; });
+    <span class="kw">return</span> summary;
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 10. FILE HANDLING -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 10</span>
+    <span class="impl-title">File Handling — ofstream &amp; ifstream</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · namespace FileIO &nbsp;|&nbsp; <span>mainwindow.cpp</span> · Line 1261, 1271</div>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>datastructures.h · namespace FileIO — tulis + baca file</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="kw">namespace</span> <span class="nm">FileIO</span> {
+
+    <span class="cm">// TULIS — ofstream ke file menu.txt</span>
+    <span class="kw">inline</span> <span class="ty">bool</span> <span class="fn">saveMenuToFile</span>(<span class="kw">const</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt;<span class="op">&amp;</span> menus,
+                                <span class="kw">const</span> std::<span class="ty">string</span><span class="op">&amp;</span> filename = <span class="st">"menu.txt"</span>) {
+        std::<span class="ty">ofstream</span> ofs(filename);
+        <span class="kw">if</span> (!ofs.<span class="fn">is_open</span>()) <span class="kw">return false</span>;
+        ofs &lt;&lt; <span class="st">"=== DATA MENU RESTORAN ===\n"</span>;
+        <span class="kw">for</span> (<span class="kw">const</span> <span class="kw">auto</span><span class="op">&amp;</span> m : menus)
+            ofs &lt;&lt; m.id &lt;&lt; <span class="st">"|"</span> &lt;&lt; m.name &lt;&lt; <span class="st">"|"</span> &lt;&lt; m.category
+                &lt;&lt; <span class="st">"|"</span> &lt;&lt; m.price &lt;&lt; <span class="st">"|"</span> &lt;&lt; (m.available ? <span class="st">"1"</span> : <span class="st">"0"</span>) &lt;&lt; <span class="st">"\n"</span>;
+        ofs.<span class="fn">close</span>();
+        <span class="kw">return true</span>;
+    }
+
+    <span class="cm">// BACA — ifstream dari file menu.txt</span>
+    <span class="kw">inline</span> std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt; <span class="fn">loadMenuFromFile</span>(<span class="kw">const</span> std::<span class="ty">string</span><span class="op">&amp;</span> filename = <span class="st">"menu.txt"</span>) {
+        std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt; result;
+        std::<span class="ty">ifstream</span> ifs(filename);
+        <span class="kw">if</span> (!ifs.<span class="fn">is_open</span>()) <span class="kw">return</span> result;
+        std::<span class="ty">string</span> line;
+        std::<span class="fn">getline</span>(ifs, line);  <span class="cm">// skip header</span>
+        <span class="kw">while</span> (std::<span class="fn">getline</span>(ifs, line)) {
+            std::<span class="ty">istringstream</span> ss(line);
+            std::<span class="ty">string</span> tok; std::<span class="ty">vector</span>&lt;std::<span class="ty">string</span>&gt; parts;
+            <span class="kw">while</span> (std::<span class="fn">getline</span>(ss, tok, <span class="st">'|'</span>)) parts.<span class="fn">push_back</span>(tok);
+            <span class="kw">if</span> (parts.<span class="fn">size</span>() >= <span class="num">5</span>)
+                result.<span class="fn">push_back</span>(<span class="ty">MenuItem</span>(std::<span class="fn">stoi</span>(parts[<span class="num">0</span>]), parts[<span class="num">1</span>],
+                                   parts[<span class="num">2</span>], std::<span class="fn">stod</span>(parts[<span class="num">3</span>]), parts[<span class="num">4</span>]==<span class="st">"1"</span>));
+        }
+        <span class="kw">return</span> result;
+    }
+
+    <span class="cm">// TULIS — ofstream ke orders.txt</span>
+    <span class="kw">inline</span> <span class="ty">bool</span> <span class="fn">saveOrdersToFile</span>(<span class="kw">const</span> std::<span class="ty">vector</span>&lt;<span class="ty">Order</span>*&gt;<span class="op">&amp;</span> orders, ...) { ... }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 11. LAMBDA -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">SYARAT 11</span>
+    <span class="impl-title">Lambda Expression — Fungsi Anonim</span>
+    <span class="impl-status status-ok">✅ TERPENUHI (10+ lokasi)</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h + mainwindow.cpp</span> · 10+ penggunaan lambda</div>
+    <p class="desc">Lambda dipakai di dalam sort, find_if, count_if, callback, dan inisialisasi UI. Variasi capture: <code>[&amp;]</code>, <code>[=]</code>, <code>[this]</code>, <code>[&amp;var]</code>.</p>
+    <div class="code-wrap">
+      <div class="code-label">
+        <span>Ringkasan semua penggunaan lambda</span>
+        <span class="lang-tag">C++</span>
+      </div>
+      <pre><span class="cm">// 1. Lambda di std::sort (Sorting::sortByName)</span>
+std::<span class="fn">sort</span>(vec.begin(), vec.end(),
+    [](<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> a, <span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> b) { <span class="kw">return</span> a.name &lt; b.name; });
+
+<span class="cm">// 2. Lambda di std::count_if (countByCategory)</span>
+std::<span class="fn">count_if</span>(table.begin(), table.end(),
+    [<span class="op">&amp;</span>cat](<span class="kw">const</span> <span class="kw">auto</span><span class="op">&amp;</span> pair) { <span class="kw">return</span> pair.second.category == cat; });
+
+<span class="cm">// 3. Lambda di std::find_if (STLUtils::findOrderById)</span>
+std::<span class="fn">find_if</span>(allOrders.begin(), allOrders.end(),
+    [targetId](<span class="ty">Order</span>* o) { <span class="kw">return</span> o-&gt;orderId == targetId; });
+
+<span class="cm">// 4. Lambda sebagai callback — forEachMenu</span>
+<span class="fn">forEachMenu</span>(newItems, [<span class="kw">this</span>](<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> m) {
+    <span class="fn">addLog</span>(QString::<span class="fn">fromStdString</span>(m.name));
+});
+
+<span class="cm">// 5. Lambda sebagai callback — applyToAllOrders</span>
+<span class="fn">applyToAllOrders</span>(orderQueue-&gt;<span class="fn">getAllOrders</span>(), [<span class="op">&amp;</span>totalAllOrders](<span class="kw">const</span> <span class="ty">Order</span><span class="op">&amp;</span> o) {
+    totalAllOrders += o.totalPrice;
+});
+
+<span class="cm">// 6. Lambda di linearSearch<T></span>
+<span class="ty">MenuItem</span>* found = <span class="fn">linearSearch</span>&lt;<span class="ty">MenuItem</span>&gt;(allPtrs,
+    [<span class="op">&amp;</span>query](<span class="ty">MenuItem</span>* m) { <span class="kw">return</span> m-&gt;name.find(query) != std::<span class="ty">string</span>::npos; });
+
+<span class="cm">// 7. Lambda di processMenusWithCondition (filter + predikat)</span>
+<span class="fn">processMenusWithCondition</span>(allMenus,
+    [<span class="op">&amp;</span>catStr](<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> m) { <span class="kw">return</span> m.category == catStr && m.price &gt; <span class="num">15000</span>; },
+    [<span class="op">&amp;</span>expensive](<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span>) { expensive++; });
+
+<span class="cm">// 8. Lambda di makeCard UI (mainwindow.cpp:108)</span>
+<span class="kw">auto</span> makeCard = [<span class="op">&amp;</span>](<span class="kw">const</span> <span class="ty">QString</span><span class="op">&amp;</span> title, <span class="ty">QLabel</span>*<span class="op">&amp;</span> lbl, <span class="kw">const</span> <span class="ty">QString</span><span class="op">&amp;</span> color) { ... };
+
+<span class="cm">// 9-10. Lambda di STL sort dalam onSortOrders</span>
+std::<span class="fn">sort</span>(allOrders.begin(), allOrders.end(),
+    [](<span class="ty">Order</span>* a, <span class="ty">Order</span>* b) { <span class="kw">return</span> a-&gt;orderId &lt; b-&gt;orderId; });
+std::<span class="fn">sort</span>(allOrders.begin(), allOrders.end(),
+    [](<span class="ty">Order</span>* a, <span class="ty">Order</span>* b) { <span class="kw">return</span> a-&gt;tableNumber &lt; b-&gt;tableNumber; });</pre>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════
+     BAGIAN B — 8 STRUKTUR DATA
+═══════════════════════════════════════════════════════════ -->
+<div class="part-title">Bagian B — 8 Struktur Data (Praktikum Strukdat)</div>
+
+<!-- SD 1 -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">STRUKDAT 1</span>
+    <span class="impl-title">Linked List (Single) — Master Data Menu</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · class MenuLinkedList · Line 87–140</div>
+    <p class="desc">Linked list single untuk master data menu. Operasi: Insert (append ke tail), Remove (hapus by ID, handle kasus head & tengah), Find (traversal by ID), Display (getAll).</p>
+    <div class="code-wrap">
+      <div class="code-label"><span>datastructures.h · Operasi Insert, Remove, Find, Display</span><span class="lang-tag">C++</span></div>
+      <pre><span class="kw">class</span> <span class="ty">MenuLinkedList</span> {
+    <span class="ty">MenuItem</span>* head; <span class="ty">int</span> size;
+
+    <span class="kw">void</span> <span class="fn">insert</span>(<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> item) {   <span class="cm">// INSERT</span>
+        <span class="ty">MenuItem</span>* node = <span class="kw">new</span> <span class="ty">MenuItem</span>(...);
+        <span class="kw">if</span> (!head) { head = node; }
+        <span class="kw">else</span> { <span class="ty">MenuItem</span>* curr=head; <span class="kw">while</span>(curr-&gt;next) curr=curr-&gt;next; curr-&gt;next=node; }
+        size++;
+    }
+
+    <span class="ty">bool</span> <span class="fn">remove</span>(<span class="ty">int</span> id) {              <span class="cm">// REMOVE (hapus by id)</span>
+        <span class="kw">if</span> (!head) <span class="kw">return false</span>;
+        <span class="kw">if</span> (head-&gt;id == id) { <span class="ty">MenuItem</span>* tmp=head; head=head-&gt;next; <span class="kw">delete</span> tmp; size--; <span class="kw">return true</span>; }
+        <span class="ty">MenuItem</span>* curr=head;
+        <span class="kw">while</span>(curr-&gt;next && curr-&gt;next-&gt;id!=id) curr=curr-&gt;next;
+        <span class="kw">if</span>(!curr-&gt;next) <span class="kw">return false</span>;
+        <span class="ty">MenuItem</span>* tmp=curr-&gt;next; curr-&gt;next=tmp-&gt;next; <span class="kw">delete</span> tmp; size--; <span class="kw">return true</span>;
+    }
+
+    <span class="ty">MenuItem</span>* <span class="fn">find</span>(<span class="ty">int</span> id) <span class="kw">const</span> {    <span class="cm">// FIND</span>
+        <span class="ty">MenuItem</span>* curr=head;
+        <span class="kw">while</span>(curr) { <span class="kw">if</span>(curr-&gt;id==id) <span class="kw">return</span> curr; curr=curr-&gt;next; }
+        <span class="kw">return</span> <span class="kw">nullptr</span>;
+    }
+
+    std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt; <span class="fn">getAll</span>() <span class="kw">const</span> { <span class="cm">// DISPLAY</span>
+        std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>*&gt; result;
+        <span class="ty">MenuItem</span>* curr=head;
+        <span class="kw">while</span>(curr) { result.<span class="fn">push_back</span>(curr); curr=curr-&gt;next; }
+        <span class="kw">return</span> result;
+    }
+};</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SD 2 -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">STRUKDAT 2</span>
+    <span class="impl-title">Circular Linked List — Rotasi Meja &amp; Shift Staf</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · TableCircularList (Line 145–220) &nbsp;|&nbsp; StaffCircularList (Line 225–310)</div>
+    <p class="desc">2 circular linked list berbeda: satu untuk rotasi meja aktif, satu untuk rotasi shift staf. Pointer tail selalu menunjuk kembali ke head (sifat circular). Operasi: Insert, Remove, rotasi (next/rotateShift), occupy/free table, findTable.</p>
+    <div class="code-wrap">
+      <div class="code-label"><span>datastructures.h · Circular insert &amp; rotate</span><span class="lang-tag">C++</span></div>
+      <pre><span class="kw">void</span> <span class="fn">insert</span>(<span class="kw">const</span> <span class="ty">Table</span><span class="op">&amp;</span> t) {   <span class="cm">// INSERT — tail->next = head (circular)</span>
+    <span class="ty">Table</span>* node = <span class="kw">new</span> <span class="ty">Table</span>(t.tableNumber, t.capacity);
+    <span class="kw">if</span> (!head) { head = tail = node; node-&gt;next = head; }
+    <span class="kw">else</span> { tail-&gt;next = node; tail = node; tail-&gt;next = head; }
+    size++;
+}
+
+<span class="ty">Table</span>* <span class="fn">next</span>() {               <span class="cm">// ROTATE — geser ke meja berikutnya</span>
+    <span class="kw">if</span> (!current) <span class="kw">return nullptr</span>;
+    current = current-&gt;next;   <span class="cm">// karena circular, tidak pernah nullptr</span>
+    <span class="kw">return</span> current;
+}
+
+<span class="ty">Table</span>* <span class="fn">findTable</span>(<span class="ty">int</span> num) <span class="kw">const</span> {  <span class="cm">// FIND di circular list</span>
+    <span class="kw">if</span> (!head) <span class="kw">return nullptr</span>;
+    <span class="ty">Table</span>* curr = head;
+    <span class="kw">do</span> {
+        <span class="kw">if</span> (curr-&gt;tableNumber == num) <span class="kw">return</span> curr;
+        curr = curr-&gt;next;
+    } <span class="kw">while</span> (curr != head);   <span class="cm">// berhenti saat kembali ke head</span>
+    <span class="kw">return nullptr</span>;
+}
+
+<span class="cm">// Untuk staf — rotasi giliran bertugas</span>
+<span class="ty">Staff</span>* <span class="fn">rotateShift</span>() {
+    <span class="kw">if</span> (!onDuty) <span class="kw">return nullptr</span>;
+    onDuty-&gt;onDuty = <span class="kw">false</span>;
+    onDuty = onDuty-&gt;next;      <span class="cm">// muter ke staf berikutnya</span>
+    onDuty-&gt;onDuty = <span class="kw">true</span>;
+    <span class="kw">return</span> onDuty;
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SD 3 -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">STRUKDAT 3</span>
+    <span class="impl-title">Stack (LIFO) — History &amp; Undo</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · class ActionStack · Line 320–360</div>
+    <p class="desc">Stack berbasis <code>std::stack&lt;Action&gt;</code>. Operasi Push (tambah aksi), Pop (undo = ambil aksi terakhir + throw jika kosong), Peek (lihat top), isEmpty, getAll (untuk tampilan riwayat).</p>
+    <div class="code-wrap">
+      <div class="code-label"><span>datastructures.h · Push, Pop, Peek</span><span class="lang-tag">C++</span></div>
+      <pre><span class="kw">class</span> <span class="ty">ActionStack</span> {
+    std::<span class="ty">stack</span>&lt;<span class="ty">Action</span>&gt; history;
+    <span class="kw">static const</span> <span class="ty">int</span> MAX_HISTORY = <span class="num">50</span>;
+
+    <span class="kw">void</span> <span class="fn">push</span>(<span class="kw">const</span> <span class="ty">Action</span><span class="op">&amp;</span> a) {   <span class="cm">// PUSH</span>
+        history.<span class="fn">push</span>(a);
+    }
+
+    <span class="ty">Action</span> <span class="fn">pop</span>() {                 <span class="cm">// POP (LIFO — ambil terakhir)</span>
+        <span class="kw">if</span> (history.<span class="fn">empty</span>())
+            <span class="kw">throw</span> std::<span class="ty">runtime_error</span>(<span class="st">"Tidak ada aksi untuk di-undo!"</span>);
+        <span class="ty">Action</span> a = history.<span class="fn">top</span>();
+        history.<span class="fn">pop</span>();
+        <span class="kw">return</span> a;
+    }
+
+    <span class="kw">const</span> <span class="ty">Action</span><span class="op">&amp;</span> <span class="fn">peek</span>() <span class="kw">const</span> {  <span class="cm">// PEEK — lihat top tanpa hapus</span>
+        <span class="kw">if</span> (history.<span class="fn">empty</span>())
+            <span class="kw">throw</span> std::<span class="ty">runtime_error</span>(<span class="st">"Stack kosong!"</span>);
+        <span class="kw">return</span> history.<span class="fn">top</span>();
+    }
+};</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SD 4 -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">STRUKDAT 4</span>
+    <span class="impl-title">Priority Queue — Antrian Order VIP</span>
+    <span class="impl-status status-ok">✅ TERPENUHI (Priority Queue)</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · OrderComparator + class OrderQueue · Line 365–420</div>
+    <p class="desc">Implementasi Priority Queue menggunakan <code>std::priority_queue</code> dengan custom comparator. Priority 1 = VIP (diproses lebih dulu), Priority 2 = Normal. Dalam prioritas sama, berlaku FIFO berdasarkan orderId. Operasi: Enqueue, Dequeue (ambil prioritas tertinggi), Front.</p>
+    <div class="code-wrap">
+      <div class="code-label"><span>datastructures.h · Priority Queue + Comparator</span><span class="lang-tag">C++</span></div>
+      <pre><span class="cm">// Custom comparator — priority kecil = lebih penting</span>
+<span class="kw">struct</span> <span class="ty">OrderComparator</span> {
+    <span class="ty">bool</span> <span class="kw">operator</span>()(<span class="kw">const</span> <span class="ty">Order</span>* a, <span class="kw">const</span> <span class="ty">Order</span>* b) <span class="kw">const</span> {
+        <span class="kw">if</span> (a-&gt;priority != b-&gt;priority)
+            <span class="kw">return</span> a-&gt;priority &gt; b-&gt;priority; <span class="cm">// 1(VIP) < 2(Normal)</span>
+        <span class="kw">return</span> a-&gt;orderId &gt; b-&gt;orderId;       <span class="cm">// FIFO dalam prioritas sama</span>
+    }
+};
+
+<span class="kw">class</span> <span class="ty">OrderQueue</span> {
+    std::<span class="ty">priority_queue</span>&lt;<span class="ty">Order</span>*, std::<span class="ty">vector</span>&lt;<span class="ty">Order</span>*&gt;, <span class="ty">OrderComparator</span>&gt; pq;
+    std::<span class="ty">list</span>&lt;<span class="ty">Order</span>*&gt; allOrders;
+
+    <span class="ty">Order</span>* <span class="fn">enqueue</span>(<span class="ty">int</span> tableNum, <span class="ty">int</span> priority = <span class="num">2</span>) {  <span class="cm">// ENQUEUE</span>
+        <span class="ty">Order</span>* order = <span class="kw">new</span> <span class="ty">Order</span>(nextId++, tableNum, priority);
+        pq.<span class="fn">push</span>(order);
+        allOrders.<span class="fn">push_back</span>(order);
+        <span class="kw">return</span> order;
+    }
+
+    <span class="ty">Order</span>* <span class="fn">dequeue</span>() {                              <span class="cm">// DEQUEUE (ambil prioritas tertinggi)</span>
+        <span class="kw">if</span> (pq.<span class="fn">empty</span>()) <span class="kw">throw</span> std::<span class="ty">runtime_error</span>(<span class="st">"Antrian order kosong!"</span>);
+        <span class="ty">Order</span>* order = pq.<span class="fn">top</span>(); pq.<span class="fn">pop</span>();
+        <span class="kw">return</span> order;
+    }
+};</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SD 5 -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">STRUKDAT 5</span>
+    <span class="impl-title">AVL Tree — Pencarian Menu O(log n)</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · AVLNode + class AVLTree · Line 425–530</div>
+    <p class="desc">AVL Tree lengkap dengan rotasi kiri/kanan dan balance factor. Digunakan untuk pencarian menu berdasarkan ID secara O(log n). Operasi: insert (dengan auto-rebalancing), remove, search, inorder traversal.</p>
+    <div class="code-wrap">
+      <div class="code-label"><span>datastructures.h · AVL rotasi dan balance</span><span class="lang-tag">C++</span></div>
+      <pre><span class="kw">static</span> <span class="ty">AVLNode</span>* <span class="fn">rotateRight</span>(<span class="ty">AVLNode</span>* y) {  <span class="cm">// Rotasi kanan</span>
+    <span class="ty">AVLNode</span>* x = y-&gt;left; <span class="ty">AVLNode</span>* T2 = x-&gt;right;
+    x-&gt;right = y; y-&gt;left = T2;
+    <span class="fn">updateHeight</span>(y); <span class="fn">updateHeight</span>(x);
+    <span class="kw">return</span> x;
+}
+
+<span class="kw">static</span> <span class="ty">AVLNode</span>* <span class="fn">balance</span>(<span class="ty">AVLNode</span>* n) {      <span class="cm">// Auto-balancing</span>
+    <span class="fn">updateHeight</span>(n);
+    <span class="ty">int</span> bf = <span class="fn">balanceFactor</span>(n);
+    <span class="kw">if</span> (bf &gt; <span class="num">1</span>) {   <span class="cm">// Left heavy</span>
+        <span class="kw">if</span> (<span class="fn">balanceFactor</span>(n-&gt;left) &lt; <span class="num">0</span>) n-&gt;left = <span class="fn">rotateLeft</span>(n-&gt;left);
+        <span class="kw">return</span> <span class="fn">rotateRight</span>(n);
+    }
+    <span class="kw">if</span> (bf &lt; <span class="num">-1</span>) {  <span class="cm">// Right heavy</span>
+        <span class="kw">if</span> (<span class="fn">balanceFactor</span>(n-&gt;right) &gt; <span class="num">0</span>) n-&gt;right = <span class="fn">rotateRight</span>(n-&gt;right);
+        <span class="kw">return</span> <span class="fn">rotateLeft</span>(n);
+    }
+    <span class="kw">return</span> n;
+}
+
+<span class="ty">MenuItem</span>* <span class="fn">search</span>(<span class="ty">int</span> id) <span class="kw">const</span> {           <span class="cm">// SEARCH O(log n)</span>
+    <span class="ty">AVLNode</span>* curr = root;
+    <span class="kw">while</span> (curr) {
+        <span class="kw">if</span> (id == curr-&gt;data.id) <span class="kw">return</span> <span class="op">&amp;</span>curr-&gt;data;
+        curr = (id &lt; curr-&gt;data.id) ? curr-&gt;left : curr-&gt;right;
+    }
+    <span class="kw">return nullptr</span>;
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SD 6 -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">STRUKDAT 6</span>
+    <span class="impl-title">Graph + BFS + DFS — Relasi Antar Meja</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · class TableGraph · Line 535–600</div>
+    <p class="desc">Graph berbasis adjacency list (<code>unordered_map&lt;int, vector&lt;int&gt;&gt;</code>) merepresentasikan relasi fisik antar meja. BFS mencari jalur terlebar, DFS menjelajahi seluruh layout dari satu meja.</p>
+    <div class="code-wrap">
+      <div class="code-label"><span>datastructures.h · Graph BFS dan DFS</span><span class="lang-tag">C++</span></div>
+      <pre><span class="kw">class</span> <span class="ty">TableGraph</span> {
+    std::<span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&gt; adjList;
+
+    <span class="kw">void</span> <span class="fn">addEdge</span>(<span class="ty">int</span> from, <span class="ty">int</span> to) {
+        adjList[from].<span class="fn">push_back</span>(to);
+        adjList[to].<span class="fn">push_back</span>(from);   <span class="cm">// undirected</span>
+    }
+
+    <span class="cm">// BFS — traversal level by level</span>
+    std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; <span class="fn">bfs</span>(<span class="ty">int</span> start) {
+        std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; visited;
+        std::<span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, <span class="ty">bool</span>&gt; seen;
+        std::<span class="ty">queue</span>&lt;<span class="ty">int</span>&gt; q;
+        q.<span class="fn">push</span>(start); seen[start] = <span class="kw">true</span>;
+        <span class="kw">while</span> (!q.<span class="fn">empty</span>()) {
+            <span class="ty">int</span> node = q.<span class="fn">front</span>(); q.<span class="fn">pop</span>();
+            visited.<span class="fn">push_back</span>(node);
+            <span class="kw">for</span> (<span class="ty">int</span> neighbor : adjList[node])
+                <span class="kw">if</span> (!seen[neighbor]) { seen[neighbor]=<span class="kw">true</span>; q.<span class="fn">push</span>(neighbor); }
+        }
+        <span class="kw">return</span> visited;
+    }
+
+    <span class="cm">// DFS — traversal depth-first pakai stack</span>
+    std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; <span class="fn">dfs</span>(<span class="ty">int</span> start) {
+        std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; visited;
+        std::<span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, <span class="ty">bool</span>&gt; seen;
+        std::<span class="ty">stack</span>&lt;<span class="ty">int</span>&gt; s;
+        s.<span class="fn">push</span>(start);
+        <span class="kw">while</span> (!s.<span class="fn">empty</span>()) {
+            <span class="ty">int</span> node = s.<span class="fn">top</span>(); s.<span class="fn">pop</span>();
+            <span class="kw">if</span> (seen[node]) <span class="kw">continue</span>;
+            seen[node] = <span class="kw">true</span>; visited.<span class="fn">push_back</span>(node);
+            <span class="kw">for</span> (<span class="ty">int</span> neighbor : adjList[node])
+                <span class="kw">if</span> (!seen[neighbor]) s.<span class="fn">push</span>(neighbor);
+        }
+        <span class="kw">return</span> visited;
+    }
+};</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SD 7 -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">STRUKDAT 7</span>
+    <span class="impl-title">Hash Table — Lookup Menu O(1)</span>
+    <span class="impl-status status-ok">✅ TERPENUHI</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · class MenuHashTable · Line 605–660</div>
+    <p class="desc">Hash table berbasis <code>std::unordered_map</code> dengan dua index: by ID (integer) dan by name (string lowercase). Pencarian O(1) average. Operasi: insert, remove, findById, findByName, countByCategory.</p>
+    <div class="code-wrap">
+      <div class="code-label"><span>datastructures.h · MenuHashTable</span><span class="lang-tag">C++</span></div>
+      <pre><span class="kw">class</span> <span class="ty">MenuHashTable</span> {
+    std::<span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, <span class="ty">MenuItem</span>&gt;        table;      <span class="cm">// hash by id</span>
+    std::<span class="ty">unordered_map</span>&lt;std::<span class="ty">string</span>, <span class="ty">int</span>&gt;  nameIndex;  <span class="cm">// hash by name</span>
+
+    <span class="kw">void</span> <span class="fn">insert</span>(<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> item) {
+        table[item.id] = item;                        <span class="cm">// O(1) insert</span>
+        nameIndex[<span class="fn">toLower</span>(item.name)] = item.id;
+    }
+
+    <span class="ty">MenuItem</span>* <span class="fn">findById</span>(<span class="ty">int</span> id) {          <span class="cm">// O(1) lookup by ID</span>
+        <span class="kw">auto</span> it = table.<span class="fn">find</span>(id);
+        <span class="kw">return</span> (it != table.<span class="fn">end</span>()) ? <span class="op">&amp;</span>it-&gt;second : <span class="kw">nullptr</span>;
+    }
+
+    <span class="ty">MenuItem</span>* <span class="fn">findByName</span>(<span class="kw">const</span> std::<span class="ty">string</span><span class="op">&amp;</span> name) { <span class="cm">// O(1) lookup by name</span>
+        <span class="kw">auto</span> it = nameIndex.<span class="fn">find</span>(<span class="fn">toLower</span>(name));
+        <span class="kw">if</span> (it == nameIndex.<span class="fn">end</span>()) <span class="kw">return nullptr</span>;
+        <span class="kw">return</span> <span class="fn">findById</span>(it-&gt;second);
+    }
+
+    <span class="ty">int</span> <span class="fn">countByCategory</span>(<span class="kw">const</span> std::<span class="ty">string</span><span class="op">&amp;</span> cat) <span class="kw">const</span> {
+        <span class="kw">return</span> (<span class="ty">int</span>)std::<span class="fn">count_if</span>(table.<span class="fn">begin</span>(), table.<span class="fn">end</span>(),
+            [<span class="op">&amp;</span>cat](<span class="kw">const</span> <span class="kw">auto</span><span class="op">&amp;</span> pair) { <span class="kw">return</span> pair.second.category == cat; });
+    }
+};</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SD 8 -->
+<div class="impl-card">
+  <div class="impl-card-header">
+    <span class="impl-num">STRUKDAT 8</span>
+    <span class="impl-title">Sorting — Bubble Sort, STL Sort, Merge Sort</span>
+    <span class="impl-status status-ok">✅ TERPENUHI (3 algoritma)</span>
+  </div>
+  <div class="impl-body">
+    <div class="file-loc">📄 <span>datastructures.h</span> · namespace Sorting · Line 665–720</div>
+    <p class="desc">3 algoritma sorting berbeda: Bubble Sort (menu by harga, ascending/descending), STL <code>std::sort</code> + lambda (menu by nama A-Z), dan Merge Sort (order by total harga). Penggunaan sorting berdasarkan konteks terbaik masing-masing.</p>
+    <div class="code-wrap">
+      <div class="code-label"><span>datastructures.h + mainwindow.cpp · 3 Algoritma Sorting</span><span class="lang-tag">C++</span></div>
+      <pre><span class="kw">namespace</span> <span class="nm">Sorting</span> {
+
+    <span class="cm">// 1. Bubble Sort — menu berdasarkan harga (manual, O(n²))</span>
+    <span class="kw">inline</span> <span class="kw">void</span> <span class="fn">bubbleSortByPrice</span>(std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt;<span class="op">&amp;</span> vec, <span class="ty">bool</span> ascending = <span class="kw">true</span>) {
+        <span class="ty">int</span> n = vec.<span class="fn">size</span>();
+        <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n-<span class="num">1</span>; i++)
+            <span class="kw">for</span> (<span class="ty">int</span> j = <span class="num">0</span>; j &lt; n-i-<span class="num">1</span>; j++)
+                <span class="kw">if</span> ((ascending && vec[j].price &gt; vec[j+<span class="num">1</span>].price) ||
+                    (!ascending && vec[j].price &lt; vec[j+<span class="num">1</span>].price))
+                    std::<span class="fn">swap</span>(vec[j], vec[j+<span class="num">1</span>]);
+    }
+
+    <span class="cm">// 2. STL sort + lambda — menu berdasarkan nama (O(n log n))</span>
+    <span class="kw">inline</span> <span class="kw">void</span> <span class="fn">sortByName</span>(std::<span class="ty">vector</span>&lt;<span class="ty">MenuItem</span>&gt;<span class="op">&amp;</span> vec) {
+        std::<span class="fn">sort</span>(vec.begin(), vec.end(),
+            [](<span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> a, <span class="kw">const</span> <span class="ty">MenuItem</span><span class="op">&amp;</span> b) { <span class="kw">return</span> a.name &lt; b.name; });
+    }
+
+    <span class="cm">// 3. Merge Sort — order berdasarkan total harga (O(n log n))</span>
+    <span class="kw">inline</span> <span class="kw">void</span> <span class="fn">merge</span>(std::<span class="ty">vector</span>&lt;<span class="ty">Order</span>*&gt;<span class="op">&amp;</span> vec, <span class="ty">int</span> l, <span class="ty">int</span> m, <span class="ty">int</span> r) {
+        std::<span class="ty">vector</span>&lt;<span class="ty">Order</span>*&gt; left(vec.begin()+l, vec.begin()+m+<span class="num">1</span>);
+        std::<span class="ty">vector</span>&lt;<span class="ty">Order</span>*&gt; right(vec.begin()+m+<span class="num">1</span>, vec.begin()+r+<span class="num">1</span>);
+        <span class="ty">int</span> i=<span class="num">0</span>, j=<span class="num">0</span>, k=l;
+        <span class="kw">while</span> (i&lt;(<span class="ty">int</span>)left.<span class="fn">size</span>() && j&lt;(<span class="ty">int</span>)right.<span class="fn">size</span>())
+            vec[k++] = (left[i]-&gt;totalPrice &gt;= right[j]-&gt;totalPrice) ? left[i++] : right[j++];
+        <span class="kw">while</span> (i&lt;(<span class="ty">int</span>)left.<span class="fn">size</span>()) vec[k++]=left[i++];
+        <span class="kw">while</span> (j&lt;(<span class="ty">int</span>)right.<span class="fn">size</span>()) vec[k++]=right[j++];
+    }
+
+    <span class="kw">inline</span> <span class="kw">void</span> <span class="fn">mergeSort</span>(std::<span class="ty">vector</span>&lt;<span class="ty">Order</span>*&gt;<span class="op">&amp;</span> vec, <span class="ty">int</span> l, <span class="ty">int</span> r) {
+        <span class="kw">if</span> (l &gt;= r) <span class="kw">return</span>;
+        <span class="ty">int</span> m = (l + r) / <span class="num">2</span>;
+        <span class="fn">mergeSort</span>(vec, l, m); <span class="fn">mergeSort</span>(vec, m+<span class="num">1</span>, r);
+        <span class="fn">merge</span>(vec, l, m, r);
+    }
+}</pre>
+    </div>
+    <div class="note"><strong>📌 Catatan laporan:</strong> Jelaskan mengapa 3 algoritma berbeda dipilih: Bubble Sort mudah dipahami untuk urutan harga; STL sort (Introsort) paling efisien untuk nama; Merge Sort stabil dan cocok untuk data order yang besar.</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ CATATAN PENTING UNTUK LAPORAN ══ -->
+<div class="section-header">
+  <div class="section-num">📝</div>
+  <div class="section-title">Catatan untuk Laporan (Bab 2 &amp; 3)</div>
+  <div class="section-badge">Tips</div>
+</div>
+
+<ul class="checklist">
+  <li>
+    <span class="check-icon">⚠️</span>
+    <div><strong>Integrasi antar struktur data:</strong> Pastikan di laporan dijelaskan bahwa semua struktur terhubung — saat tambah menu, data masuk ke <em>MenuLinkedList</em>, <em>AVLTree</em>, dan <em>MenuHashTable</em> sekaligus. Ini membuktikan nilai Integrasi Program (20% Praktikum Strukdat).</div>
+  </li>
+  <li>
+    <span class="check-icon">⚠️</span>
+    <div><strong>Justifikasi pemilihan struktur data:</strong> Untuk Teori Strukdat (40%), jelaskan alasan: Stack untuk Undo karena LIFO (aksi terakhir dibatalkan pertama); Priority Queue untuk order karena VIP harus diproses dulu; AVL Tree untuk pencarian karena O(log n).</div>
+  </li>
+  <li>
+    <span class="check-icon">✅</span>
+    <div><strong>Memory tidak leak:</strong> Semua kelas punya destructor yang membebaskan memori (<code>delete</code> node satu per satu). Ini memenuhi nilai Keberhasilan Implementasi (80% Praktikum Strukdat).</div>
+  </li>
+  <li>
+    <span class="check-icon">✅</span>
+    <div><strong>Operasi dasar terpenuhi:</strong> Insert, Delete, Display (LL), Push/Pop (Stack), Enqueue/Dequeue (Queue) semua ada — pastikan screenshot masing-masing operasi ada di Bab 4.</div>
+  </li>
+  <li>
+    <span class="check-icon">💡</span>
+    <div><strong>Untuk Flowchart (Bab 2):</strong> Buat flowchart utama dari alur: Start → Login → Menu Utama → (Kelola Menu | Tambah Order | Dequeue | Undo) → End. Setiap cabang bisa dipecah menjadi sub-flowchart.</div>
+  </li>
+</ul>
+
+</main>
+
+<footer>
+  LAPORAN REVIEW UAS TERINTEGRASI · Sistem Manajemen Restoran C++ · Dibuat untuk keperluan akademis
+</footer>
+
+</body>
+</html>
