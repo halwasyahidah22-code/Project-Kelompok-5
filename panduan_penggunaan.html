@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Penggunaan - Restaurant System Kelompok 5</title>
+    <style>
+        :root {
+            --primary: #021A54;
+            --secondary: #FF85BB;
+            --light: #F5F5F5;
+            --text-dark: #1a1c1c;
+            --text-light: #5A6A85;
+            --white: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 5px solid var(--secondary);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        header p {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--primary);
+        }
+        .card h2 {
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 10px;
+        }
+        .highlight {
+            background-color: #FFCEE3;
+            color: var(--primary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .algo-badge {
+            display: inline-block;
+            background-color: #e0e7ff;
+            color: #4338ca;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Panduan Penggunaan</h1>
+    <p>Aplikasi Restaurant System - Tugas UAS Kelompok 5</p>
+</header>
+
+<div class="container">
+    
+    <div class="card">
+        <h2>1. Dashboard Utama</h2>
+        <p>Halaman pertama yang Anda lihat saat membuka aplikasi. Dashboard ini menampilkan statistik ringkas dari restoran Anda secara <i>real-time</i>.</p>
+        <ul>
+            <li><strong>Total Menu:</strong> Jumlah menu yang terdaftar di database.</li>
+            <li><strong>Total Order:</strong> Jumlah pesanan yang sedang diproses.</li>
+            <li><strong>Meja Terpakai:</strong> Jumlah meja yang sedang melayani pelanggan.</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>2. Manajemen Menu <span class="algo-badge">Binary Search Tree (BST)</span></h2>
+        <p>Tab ini digunakan untuk mengelola daftar makanan dan minuman yang dijual.</p>
+        <ul>
+            <li><strong>Tambah Menu:</strong> Masukkan Nama Menu, Kategori, dan Harga. Tekan tombol Tambah. Sistem akan menolaknya jika nama kosong atau harga mengandung huruf.</li>
+            <li><strong>Cari Menu:</strong> Ketik nama menu untuk mencarinya. Pencarian ini sangat cepat karena menggunakan algoritma struktur data BST (Binary Search Tree).</li>
+            <li><strong>Tampilkan Berdasarkan Abjad:</strong> Menu otomatis diurutkan dari A-Z menggunakan metode penelusuran <i>In-Order Traversal</i>.</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>3. Penjualan & Kasir <span class="algo-badge">Hash Map & Queue</span></h2>
+        <p>Tempat Anda melayani pelanggan dan mencatat pesanan.</p>
+        <ul>
+            <li>Pilih Nomor Meja dari <i>dropdown</i> (1 sampai 8).</li>
+            <li>Pilih Makanan/Minuman, tentukan jumlah (Qty), lalu klik <strong>Tambah Pesanan</strong>.</li>
+            <li>Pesanan yang masuk akan disimpan dalam <span class="highlight">Antrean (Queue)</span> dapur.</li>
+            <li>Untuk menyelesaikan tagihan meja, klik tombol <strong>Bayar & Selesaikan</strong>.</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>4. Riwayat Transaksi <span class="algo-badge">Stack (LIFO)</span></h2>
+        <p>Semua transaksi yang sudah dibayar akan dicatat di sini.</p>
+        <ul>
+            <li>Data disimpan menggunakan metode tumpukan / Stack (<i>Last-In, First-Out</i>).</li>
+            <li>Fitur ini memungkinkan Anda untuk melakukan <strong>Undo</strong> (membatalkan penyelesaian pesanan terakhir jika kasir melakukan kesalahan).</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>5. Manajemen Meja & Simulasi Jalur <span class="algo-badge">Graph BFS/DFS</span></h2>
+        <p>Tab ini menampilkan visualisasi denah / layout meja restoran dalam bentuk Grafik (Graph).</p>
+        <ul>
+            <li><strong>Jalankan BFS:</strong> Menyimulasikan pencarian jalur terdekat pelayan dari satu meja ke meja lain secara menyebar (berlapis). Animasi akan menunjukkan warna Hijau (dilewati) dan Oranye (aktif).</li>
+            <li><strong>Jalankan DFS:</strong> Menyimulasikan inspeksi kebersihan seluruh ruangan secara mendalam dari ujung ke ujung.</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>6. Rekomendasi Menu Cerdas <span class="algo-badge">Graph BFS/DFS</span></h2>
+        <p>Sistem ini bisa merekomendasikan menu layaknya aplikasi modern (Netflix/Tokopedia) berdasarkan riwayat pembelian pelanggan sebelumnya.</p>
+        <ul>
+            <li><strong>Rekomendasi Langsung:</strong> Menampilkan menu yang paling sering dibeli secara bersamaan dengan menu pilihan Anda.</li>
+            <li><strong>Rekomendasi Alternatif (BFS):</strong> Menyarankan menu berdasarkan kecenderungan (Level 1) menggunakan pencarian Breadth-First Search.</li>
+            <li><strong>Paket Kombo Berantai (DFS):</strong> Membuatkan ide paket makanan lengkap berantai (maksimal 4 menu) dengan mencari jalur asosiasi terpanjang menggunakan Depth-First Search.</li>
+        </ul>
+    </div>
+
+</div>
+
+<footer>
+    &copy; 2026 - Restaurant System Kelompok 5. Dibangun menggunakan Qt C++.
+</footer>
+
+</body>
+</html>
