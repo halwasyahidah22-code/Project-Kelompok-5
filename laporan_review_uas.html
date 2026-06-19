@@ -460,7 +460,7 @@
   <tr><td>3</td><td>Stack (LIFO)</td><td>ActionStack</td><td>History aksi &amp; fitur Undo</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
   <tr><td>4</td><td>Priority Queue</td><td>OrderQueue + OrderComparator</td><td>Antrian order VIP &gt; Normal, FIFO dalam prioritas sama</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
   <tr><td>5</td><td>AVL Tree</td><td>AVLTree</td><td>Pencarian menu cepat O(log n) dengan auto-balancing</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
-  <tr><td>6</td><td>Graph + BFS/DFS</td><td>TableGraph</td><td>Relasi/layout antar meja, BFS &amp; DFS dari meja aktif</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
+  <tr><td>6</td><td>Graph + BFS/DFS</td><td>TableGraph &amp; MenuRecGraph</td><td>Relasi meja, BFS (Rekomendasi Menu), DFS (Kombo Berantai)</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
   <tr><td>7</td><td>Hashing / Hash Table</td><td>MenuHashTable</td><td>Lookup O(1) menu by ID &amp; by name, countByCategory</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
   <tr><td>8</td><td>Sorting</td><td>namespace Sorting</td><td>Bubble Sort (harga), STL sort+lambda (nama), Merge Sort (total order)</td><td><span class="badge b-ok">✅ Ada</span></td></tr>
 </table>
@@ -1304,51 +1304,47 @@ std::<span class="fn">sort</span>(allOrders.begin(), allOrders.end(),
 <div class="impl-card">
   <div class="impl-card-header">
     <span class="impl-num">STRUKDAT 6</span>
-    <span class="impl-title">Graph + BFS + DFS — Relasi Antar Meja</span>
-    <span class="impl-status status-ok">✅ TERPENUHI</span>
+    <span class="impl-title">Graph + BFS + DFS — Relasi Meja &amp; Rekomendasi Menu</span>
+    <span class="impl-status status-ok">✅ TERPENUHI (2 Implementasi)</span>
   </div>
   <div class="impl-body">
-    <div class="file-loc">📄 <span>datastructures.h</span> · class TableGraph · Line 535–600</div>
-    <p class="desc">Graph berbasis adjacency list (<code>unordered_map&lt;int, vector&lt;int&gt;&gt;</code>) merepresentasikan relasi fisik antar meja. BFS mencari jalur terlebar, DFS menjelajahi seluruh layout dari satu meja.</p>
+    <div class="file-loc">📄 <span>datastructures.h</span> · TableGraph &amp; MenuRecommendationGraph</div>
+    <p class="desc">Menggunakan 2 sistem Graph terpisah. <strong>1) TableGraph:</strong> Relasi antar meja (BFS rute terlebar, DFS mencari jalur). <strong>2) MenuRecommendationGraph:</strong> Memetakan rantai pesanan ala E-Commerce menggunakan <b>BFS Level 1</b> untuk ekstraksi alternatif menu terdekat, dan <b>DFS Combo Path</b> untuk merangkai pesanan kombo berurut.</p>
     <div class="code-wrap">
-      <div class="code-label"><span>datastructures.h · Graph BFS dan DFS</span><span class="lang-tag">C++</span></div>
-      <pre><span class="kw">class</span> <span class="ty">TableGraph</span> {
-    std::<span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&gt; adjList;
+      <div class="code-label"><span>datastructures.h · Rekomendasi Pintar (BFS &amp; DFS)</span><span class="lang-tag">C++</span></div>
+      <pre><span class="kw">class</span> <span class="ty">MenuRecommendationGraph</span> {
+    <span class="cm">// Adjacency List: Item -> Daftar (Item Teman, Frekuensi Beli Bareng)</span>
+    std::<span class="ty">unordered_map</span>&lt;std::<span class="ty">string</span>, std::<span class="ty">unordered_map</span>&lt;std::<span class="ty">string</span>, <span class="ty">int</span>&gt;&gt; adjList;
 
-    <span class="kw">void</span> <span class="fn">addEdge</span>(<span class="ty">int</span> from, <span class="ty">int</span> to) {
-        adjList[from].<span class="fn">push_back</span>(to);
-        adjList[to].<span class="fn">push_back</span>(from);   <span class="cm">// undirected</span>
-    }
-
-    <span class="cm">// BFS — traversal level by level</span>
-    std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; <span class="fn">bfs</span>(<span class="ty">int</span> start) {
-        std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; visited;
-        std::<span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, <span class="ty">bool</span>&gt; seen;
-        std::<span class="ty">queue</span>&lt;<span class="ty">int</span>&gt; q;
-        q.<span class="fn">push</span>(start); seen[start] = <span class="kw">true</span>;
+    <span class="cm">// [BFS] — Rekomendasi Level 1 (Ekstraksi Tetangga Langsung)</span>
+    std::<span class="ty">vector</span>&lt;std::<span class="ty">string</span>&gt; <span class="fn">getRecommendationsBFS</span>(<span class="kw">const</span> std::<span class="ty">string</span>&amp; startItem) {
+        std::<span class="ty">queue</span>&lt;std::<span class="ty">string</span>&gt; q;
+        q.<span class="fn">push</span>(startItem);
         <span class="kw">while</span> (!q.<span class="fn">empty</span>()) {
-            <span class="ty">int</span> node = q.<span class="fn">front</span>(); q.<span class="fn">pop</span>();
-            visited.<span class="fn">push_back</span>(node);
-            <span class="kw">for</span> (<span class="ty">int</span> neighbor : adjList[node])
-                <span class="kw">if</span> (!seen[neighbor]) { seen[neighbor]=<span class="kw">true</span>; q.<span class="fn">push</span>(neighbor); }
+            std::<span class="ty">string</span> curr = q.<span class="fn">front</span>(); q.<span class="fn">pop</span>();
+            <span class="kw">for</span> (<span class="kw">const</span> <span class="kw">auto</span>&amp; neighbor : adjList[curr]) {
+                level1Recs.<span class="fn">push_back</span>(neighbor.first); <span class="cm">// Ambil tetangga</span>
+            }
+            <span class="kw">break</span>; <span class="cm">// Berhenti di Level 1</span>
         }
-        <span class="kw">return</span> visited;
+        <span class="kw">return</span> level1Recs;
     }
 
-    <span class="cm">// DFS — traversal depth-first pakai stack</span>
-    std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; <span class="fn">dfs</span>(<span class="ty">int</span> start) {
-        std::<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; visited;
-        std::<span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, <span class="ty">bool</span>&gt; seen;
-        std::<span class="ty">stack</span>&lt;<span class="ty">int</span>&gt; s;
-        s.<span class="fn">push</span>(start);
+    <span class="cm">// [DFS] — Pencarian Rantai Pesanan Kombo Berantai</span>
+    std::<span class="ty">vector</span>&lt;std::<span class="ty">string</span>&gt; <span class="fn">getRecommendationComboDFS</span>(<span class="kw">const</span> std::<span class="ty">string</span>&amp; startItem) {
+        std::<span class="ty">stack</span>&lt;std::<span class="ty">string</span>&gt; s;
+        s.<span class="fn">push</span>(startItem);
         <span class="kw">while</span> (!s.<span class="fn">empty</span>()) {
-            <span class="ty">int</span> node = s.<span class="fn">top</span>(); s.<span class="fn">pop</span>();
-            <span class="kw">if</span> (seen[node]) <span class="kw">continue</span>;
-            seen[node] = <span class="kw">true</span>; visited.<span class="fn">push_back</span>(node);
-            <span class="kw">for</span> (<span class="ty">int</span> neighbor : adjList[node])
-                <span class="kw">if</span> (!seen[neighbor]) s.<span class="fn">push</span>(neighbor);
+            std::<span class="ty">string</span> curr = s.<span class="fn">top</span>(); s.<span class="fn">pop</span>();
+            <span class="kw">if</span> (!visited[curr]) {
+                visited[curr] = <span class="kw">true</span>;
+                comboPath.<span class="fn">push_back</span>(curr);
+                <span class="cm">// Lanjut jelajahi node anak terdalam (DFS)</span>
+                <span class="kw">for</span> (<span class="kw">const</span> <span class="kw">auto</span>&amp; neighbor : adjList[curr])
+                    <span class="kw">if</span> (!visited[neighbor.first]) s.<span class="fn">push</span>(neighbor.first);
+            }
         }
-        <span class="kw">return</span> visited;
+        <span class="kw">return</span> comboPath;
     }
 };</pre>
     </div>
