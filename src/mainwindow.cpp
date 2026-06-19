@@ -2291,38 +2291,7 @@ void MainWindow::refreshLaporanKeuangan()
 // ============================================================
 void MainWindow::onTambahStok()
 {
-    try {
-        QString nama = ui->inputInvNama->text().trimmed();
-        if (nama.isEmpty())
-            throw RestaurantException("Nama bahan tidak boleh kosong!");
-
-        InventarisItem item;
-        item.nama      = nama.toStdString();
-        item.kategori  = ui->inputInvKategori->currentText().toStdString();
-        item.stok      = ui->inputInvStok->value();
-        item.satuan    = ui->inputInvSatuan->currentText().toStdString();
-        item.minStok   = ui->inputInvMinStok->value();
-        item.hargaBeli = ui->inputInvHargaBeli->value();
-
-        InventarisItem* inserted = inventarisList->insert(item);
-        actionStack->push(Action("add_inventaris",
-            "Tambah bahan: " + item.nama, inserted->id));
-
-        QString logMsg = QString("📦 Bahan ditambah: %1 | %2 %3 | Harga: %4")
-            .arg(nama, QString::number(item.stok),
-                 QString::fromStdString(item.satuan), formatPrice(item.hargaBeli));
-        ui->invLogDisplay->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + logMsg);
-        addLog(logMsg);
-
-        ui->inputInvNama->clear();
-        ui->inputInvStok->setValue(0);
-        ui->inputInvHargaBeli->setValue(0);
-        refreshInventarisTable();
-        refreshHistoryList();
-
-    } catch (const RestaurantException& e) {
-        QMessageBox::warning(this, "Peringatan", QString::fromStdString(e.what()));
-    }
+    QMessageBox::information(this, "Info", "Untuk menambahkan menu baru, silakan gunakan fitur di tab 'Manajemen Menu'.\n\nDi halaman Stok ini, Anda hanya bisa menyeleksi menu di tabel lalu menggunakan tombol 'Update Stok (+/-)'.");
 }
 
 void MainWindow::onUpdateStok()
@@ -2358,48 +2327,56 @@ void MainWindow::onHapusStok()
 {
     int row = ui->inventarisTable->currentRow();
     if (row < 0) {
-        QMessageBox::information(this, "Info", "Pilih bahan yang akan dihapus!"); return;
+        QMessageBox::information(this, "Info", "Pilih menu yang akan dihapus!"); return;
     }
     int id    = ui->inventarisTable->item(row, 0)->text().toInt();
     QString nama = ui->inventarisTable->item(row, 1)->text();
 
     auto reply = QMessageBox::question(this, "Konfirmasi Hapus",
-        QString("Hapus bahan:\n%1?").arg(nama), QMessageBox::Yes | QMessageBox::No);
+        QString("Hapus menu:\n%1?").arg(nama), QMessageBox::Yes | QMessageBox::No);
     if (reply != QMessageBox::Yes) return;
 
-    inventarisList->remove(id);
-    actionStack->push(Action("remove_inventaris", "Hapus bahan: " + nama.toStdString(), id));
+    menuList->remove(id);
+    menuTree->remove(id); // Keep AVL tree in sync
+    actionStack->push(Action("remove_menu", "Hapus menu: " + nama.toStdString(), id));
 
-    QString logMsg = QString("🗑 Bahan dihapus: %1").arg(nama);
+    QString logMsg = QString("🗑 Menu dihapus: %1").arg(nama);
     ui->invLogDisplay->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + logMsg);
     addLog(logMsg);
     refreshInventarisTable();
+    refreshMenuTable(); // Refresh the menu table as well
     refreshHistoryList();
 }
 
 void MainWindow::onCekStokMinim()
 {
-    auto menipis = inventarisList->getMenipis();
+    auto items = menuList->getAll();
+    std::vector<MenuItem*> menipis;
+    for (auto* m : items) {
+        if (m->stock <= 3) {
+            menipis.push_back(m);
+        }
+    }
+
     if (menipis.empty()) {
-        QMessageBox::information(this, "Stok Aman", "✅ Semua stok bahan dalam kondisi aman!");
-        addLog("✅ Cek stok: semua bahan aman.");
+        QMessageBox::information(this, "Stok Aman", "✅ Semua stok menu dalam kondisi aman!");
+        addLog("✅ Cek stok: semua menu aman.");
         return;
     }
 
-    QString msg = QString("⚠ PERINGATAN: %1 bahan stok menipis!\n\n").arg(menipis.size());
-    for (auto* inv : menipis)
-        msg += QString("• %1: %2 %3 (min: %4)\n")
-            .arg(QString::fromStdString(inv->nama))
-            .arg(inv->stok).arg(QString::fromStdString(inv->satuan))
-            .arg(inv->minStok);
+    QString msg = QString("⚠ PERINGATAN: %1 menu stoknya menipis!\n\n").arg(menipis.size());
+    for (auto* m : menipis)
+        msg += QString("• %1: %2 porsi (min: 3)\n")
+            .arg(QString::fromStdString(m->name))
+            .arg(m->stock);
 
     QMessageBox::warning(this, "Stok Menipis!", msg);
-    addLog(QString("⚠ Cek stok: %1 bahan menipis!").arg(menipis.size()));
+    addLog(QString("⚠ Cek stok: %1 menu menipis!").arg(menipis.size()));
 
-    // Highlight baris menipis
-    auto all = inventarisList->getAll();
-    for (int i = 0; i < (int)all.size(); i++) {
-        QColor bg = all[i]->menipis() ? QColor(255, 235, 238) : Qt::white;
+    // Highlight baris menipis di tabel
+    for (int i = 0; i < (int)items.size(); i++) {
+        bool isMenipis = items[i]->stock <= 3;
+        QColor bg = isMenipis ? QColor(255, 235, 238) : Qt::white;
         for (int c = 0; c < ui->inventarisTable->columnCount(); c++) {
             if (ui->inventarisTable->item(i, c))
                 ui->inventarisTable->item(i, c)->setBackground(bg);
