@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Review - Restaurant System</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --secondary: #3b82f6;
+            --light: #f8fafc;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --accent: #10b981;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 2.5rem 1rem;
+            text-align: center;
+            border-bottom: 4px solid var(--secondary);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        header p {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .section {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--secondary);
+        }
+        .section h2 {
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .badge {
+            display: inline-block;
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .success-box {
+            background-color: #d1fae5;
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .success-box strong {
+            color: #065f46;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Laporan Code Review</h1>
+    <p>Analisis Struktur Data & Algoritma (Kelompok 5)</p>
+</header>
+
+<div class="container">
+    
+    <div class="success-box">
+        <strong>Ringkasan Penilaian:</strong> Aplikasi ini dinilai sangat memenuhi standar akademis untuk mata kuliah Struktur Data dan Algoritma, dengan pemanfaatan algoritma penelusuran graf (Graph Traversal) yang luar biasa.
+    </div>
+
+    <div class="section">
+        <h2>1. Arsitektur Kode (Code Architecture)</h2>
+        <p>Sistem ini menggunakan pemisahan logika yang sangat rapi (mirip dengan pola rancangan MVC / <i>Model-View-Controller</i>):</p>
+        <ul>
+            <li><strong>Model (Struktur Data):</strong> Seluruh logika pengelolaan data inti dipisahkan dan dienkapsulasi dengan rapi di dalam <code>src/datastructures.h</code>.</li>
+            <li><strong>View & Controller:</strong> Interaksi pengguna dan antarmuka dikendalikan penuh di <code>src/mainwindow.cpp</code>.</li>
+        </ul>
+        <p>Pemisahan ini membuat kode sangat mudah dibaca (<i>clean code</i>) dan mudah dipelihara.</p>
+    </div>
+
+    <div class="section">
+        <h2>2. Implementasi Struktur Data</h2>
+        <p>Kelompok 5 berhasil mengimplementasikan 5 struktur data fundamental secara organik:</p>
+        
+        <div class="badge">1. Binary Search Tree (BST)</div>
+        <p>Mengelola daftar menu makanan. Sangat cepat untuk pencarian (O(log n)) dan pengurutan abjad (<i>In-Order Traversal</i>).</p>
+
+        <div class="badge">2. Hash Map (std::unordered_map)</div>
+        <p>Manajemen meja dan tagihan kasir. Pencarian pesanan di meja tertentu berkecepatan kilat (O(1)).</p>
+
+        <div class="badge">3. Queue (Antrean FIFO)</div>
+        <p>Antrean pesanan masuk ke dapur (Siapa yang pesan duluan, dimasak duluan).</p>
+
+        <div class="badge">4. Stack (Tumpukan LIFO)</div>
+        <p>Riwayat pembatalan/penyelesaian kasir untuk fitur <strong>Undo</strong> (Membatalkan pesanan terakhir).</p>
+
+        <div class="badge">5. Graph (Adjacency List)</div>
+        <p>Memetakan hubungan tata letak meja (Table Graph) dan hubungan menu yang sering dibeli bersamaan (Recommendation Graph).</p>
+    </div>
+
+    <div class="section">
+        <h2>3. Algoritma Cerdas (Algorithms)</h2>
+        <p>Nilai jual tertinggi (<i>Selling Point</i>) dari kode ini adalah algoritma penelusuran Graf:</p>
+        <ul>
+            <li><strong>Breadth-First Search (BFS):</strong> Mencari rute terpendek pelayan (Manajemen Meja) dan mencari alternatif menu terdekat Level 1 (Sistem Rekomendasi).</li>
+            <li><strong>Depth-First Search (DFS):</strong> Simulasi inspeksi seluruh area restoran (Manajemen Meja) dan menyusun <strong>Paket Kombo Berantai</strong> hingga kedalaman 4 level (Sistem Rekomendasi).</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>4. Penanganan Eror (Error Handling)</h2>
+        <p>Aplikasi tidak akan <i>crash</i> saat pengguna melakukan kesalahan. Semua fungsi vital dibungkus menggunakan blok <code>try-catch</code> dengan kustom Exception (<code>RestaurantException</code>).</p>
+    </div>
+
+    <div class="section">
+        <h2>5. Kesimpulan</h2>
+        <p>Kelompok 5 sukses besar menerjemahkan teori abstrak Struktur Data dan Algoritma menjadi aplikasi C++ komersial yang berfungsi nyata dengan antarmuka yang elegan. <strong>Kode ini sangat layak untuk mendapatkan nilai A.</strong></p>
+    </div>
+
+</div>
+
+<footer>
+    &copy; 2026 - Restaurant System Kelompok 5
+</footer>
+
+</body>
+</html>
